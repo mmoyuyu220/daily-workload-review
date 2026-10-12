@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>9月29日 群聊&工单统计预览</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:#f2f4f8;color:#1f2733;padding:28px;line-height:1.5}
+.wrap{max-width:1080px;margin:0 auto}
+.head{position:relative;overflow:hidden;display:flex;align-items:center;gap:20px;margin-bottom:20px;background:linear-gradient(120deg,#1e47a8 0%,#2c5cc5 45%,#4f7fe0 100%);padding:22px 26px;border-radius:18px;box-shadow:0 8px 24px rgba(30,71,168,.28)}
+.head::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(255,255,255,.16),transparent 70%);pointer-events:none}
+.head::before{content:"";position:absolute;right:60px;bottom:-80px;width:180px;height:180px;background:radial-gradient(circle,rgba(255,255,255,.10),transparent 70%);pointer-events:none}
+.head .hdate{position:relative;z-index:1;display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:12px 18px;flex-shrink:0;backdrop-filter:blur(2px)}
+.head .hd-day{font-size:44px;font-weight:800;color:#fff;line-height:1;letter-spacing:-1px}
+.head .hd-my{text-align:left}
+.head .hd-ym{font-size:15px;font-weight:700;color:#fff;line-height:1.2}
+.head .hd-wd{font-size:12px;color:rgba(255,255,255,.8);margin-top:3px;background:rgba(255,255,255,.18);border-radius:6px;padding:1px 8px;display:inline-block}
+.head .htxt{position:relative;z-index:1;flex:1;padding-left:20px;border-left:3px solid rgba(255,255,255,.35)}
+.head h1{font-size:24px;font-weight:800;color:#fff;letter-spacing:.5px;white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.12)}
+.head .sub{color:rgba(255,255,255,.88);font-size:12.5px;margin-top:7px;line-height:1.6}
+.badge{position:relative;z-index:1;align-self:flex-start;background:rgba(255,255,255,.92);color:#2c5cc5;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.12)}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:14px}
+.kpi{background:#fff;border:1px solid #e6eaf0;border-radius:14px;padding:16px 14px;box-shadow:0 1px 3px rgba(20,40,80,.04)}
+.kpi .v{font-size:30px;font-weight:700;color:#12203a;line-height:1.1}
+.kpi .l{font-size:12px;color:#6b7688;margin-top:6px}
+.kpi .s{font-size:11px;color:#98a2b3;margin-top:3px}
+.kpi.red .v{color:#d1342f} .kpi.green .v{color:#1f9d55} .kpi.blue .v{color:#2c5cc5}
+.sec{background:#fff;border:1px solid #e6eaf0;border-radius:16px;padding:20px 22px;margin-top:18px;box-shadow:0 1px 3px rgba(20,40,80,.04)}
+.sec h2{font-size:16px;color:#12203a;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.sec .desc{font-size:12px;color:#8a94a6;margin-bottom:14px}
+.tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px}
+.tag.ext{background:#fdeceb;color:#d1342f} .tag.int{background:#e9f6ee;color:#1f9d55} .tag.pend{background:#fff4e5;color:#c77700}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px 10px;text-align:center;border-bottom:1px solid #eef1f5}
+th{background:#f7f9fc;color:#6b7688;font-weight:600;font-size:12px}
+td.nm{text-align:left;font-weight:600;color:#2a3547}
+td.gl{text-align:left;color:#3a4557} td.num{font-weight:700;color:#12203a;width:80px}
+.warn{color:#d1342f;font-weight:700} .ok{color:#1f9d55;font-weight:600}
+.bar{background:#eef1f5;border-radius:6px;height:14px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#3b82f6,#2c5cc5);border-radius:6px}
+td.dist{text-align:left;color:#5a6b85;font-size:12px;line-height:1.5}
+.minicards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.mc{background:#f7f9fc;border:1px solid #eef1f5;border-radius:10px;padding:10px 8px;text-align:center}
+.mc .mv{font-size:20px;font-weight:700;color:#12203a}
+.mc .ml{font-size:11px;color:#6b7688;margin-top:4px}
+.bizgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.totalproc{margin:4px 0 16px;padding:16px 20px;background:linear-gradient(135deg,#2c5cc5,#3b82f6);border-radius:14px;color:#fff;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;box-shadow:0 2px 10px rgba(44,92,197,.25)}
+.totalproc .tp-label{font-size:15px;font-weight:600;opacity:.92}
+.totalproc .tp-val{font-size:38px;font-weight:800;line-height:1}
+.totalproc .tp-sub{font-size:12px;opacity:.9;margin-left:auto}
+.bcard{border:1px dashed #f0b04a;background:#fffaf0;border-radius:12px;padding:14px;text-align:center}
+.bcard.filled{border:1px solid #cdd8ec;background:#f4f8ff}
+.bcard.empty{border:1px dashed #d7dce4;background:#fafbfc}
+.blabel{font-size:12px;color:#7a6222;font-weight:600} .bval{font-size:20px;color:#c77700;font-weight:700;margin-top:8px}
+.bval.ok{color:#2c5cc5} .bsrc{font-size:11px;color:#6b7688;margin-top:4px}
+.bval{color:#98a2b3}
+.chartbox{background:#fafbfc;border:1px solid #eef1f5;border-radius:12px;padding:14px 16px;margin-top:10px}
+.foot{text-align:center;color:#98a2b3;font-size:12px;margin-top:22px}
+.acard{border:1px solid #eef1f5;border-left:3px solid #d1342f;border-radius:10px;padding:11px 14px;margin-bottom:10px;background:#fcfdff}
+.act{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}
+.acdept{color:#2c5cc5;font-weight:600} .acdet{color:#d1342f}
+.acbody{font-size:13px;color:#2a3547;margin-bottom:5px}
+.acfoot{font-size:12px;color:#6b7688}
+.cls{display:flex;gap:14px;margin:10px 0 4px}
+.clsc{flex:1;background:#f7f9fc;border:1px solid #eef1f5;border-radius:12px;padding:12px;text-align:center}
+.clsc .cn{font-size:26px;font-weight:700;color:#d1342f}
+.clsc .cl{font-size:12px;color:#6b7688;margin-top:4px} .clsc .cl span{color:#98a2b3;font-size:11px}
+.plan-box{background:#f5f9ff;border-left:4px solid #2c5cc5;border-radius:10px;padding:18px 22px;margin-top:6px}
+.plan-title{color:#2c5cc5;font-size:16px;font-weight:700;margin-bottom:16px}
+.plan-list{display:flex;flex-direction:column;gap:14px}
+.plan-item{display:flex;align-items:flex-start;gap:12px}
+.plan-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:#2c5cc5;color:#fff;font-size:13px;font-weight:700;line-height:24px;text-align:center}
+.plan-body{flex:1;font-size:13px;color:#2a3547;line-height:1.7}
+.plan-body strong{color:#12203a;font-weight:700}
+.warn-tbl{margin-top:10px;overflow-x:auto}
+.warn-tbl table{width:100%;border-collapse:collapse;font-size:13px}
+.warn-tbl th,.warn-tbl td{border:1px solid #eef1f5;padding:9px 10px;text-align:center}
+.warn-tbl th{background:#f3f6fc;color:#12203a}
+.warn-tbl td.nm{text-align:left;color:#2a3547}
+.empty{color:#8a94a6;padding:28px;text-align:center;background:#fafbfc;border:1px dashed #d7dce4;border-radius:10px}
+</style></head>
+<body><div class="wrap">
+  <div class="head">
+    <div class="hdate">
+      <div class="hd-day">29</div>
+      <div class="hd-my"><div class="hd-ym">2026.09</div><div class="hd-wd">周二</div></div>
+    </div>
+    <div class="htxt">
+      <h1>运营数据汇总日报</h1>
+      <div class="sub">数据范围 9月29日 全天 · 外部客服对接 11 群 351 条 · 内部对接 10 群 112 条</div>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi blue"><div class="v">463</div><div class="l">当日总消息数量</div><div class="s">外部 351 · 内部 112</div></div>
+    <div class="kpi"><div class="v">13</div><div class="l">目标同事被@次数</div><div class="s">12 条工单消息 · 按人次计</div></div>
+    <div class="kpi green"><div class="v">11</div><div class="l">已回复</div><div class="s">外部@工单</div></div>
+    <div class="kpi red"><div class="v">1</div><div class="l">未回复</div><div class="s">外部@工单</div></div>
+    <div class="kpi"><div class="v">11</div><div class="l">工单回复总量</div><div class="s">群聊口径</div></div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="tag ext">外部客服对接</span>目标同事回复明细（精确到人）</h2>
+    <div class="desc">按 7 位目标同事分人统计：被@数 = 当日被@次数；回复数量 = 该同事实际处理（回复）的工单数（回复人不必是被@人，只要此单消息被其处理过即记）；他人代回 = 被@后由其他同事跟进；未跟进 = 被@但无人处理；平均/最大回复时长 = 该同事处理工单的响应时长(分)。实际回复人见下方明细。</div>
+    <table>
+      <tr><th>姓名</th><th>被@数</th><th>回复数量</th><th>他人代回</th><th>未跟进</th><th>平均回复时长(分)</th><th>最大回复时长(分)</th></tr>
+      <tr><td class="nm">刘思凡</td><td>1</td><td>0</td><td>1</td><td class="">0</td><td>—</td><td>—</td></tr><tr style="opacity:.45"><td class="nm">王妙星</td><td>0</td><td>0</td><td>0</td><td class="">0</td><td>—</td><td>—</td></tr><tr><td class="nm">杨凡凡</td><td>11</td><td>11</td><td>0</td><td class="warn">1</td><td>24</td><td>64</td></tr><tr><td class="nm">马红霞</td><td>1</td><td>0</td><td>1</td><td class="">0</td><td>—</td><td>—</td></tr><tr style="opacity:.45"><td class="nm">赵豫思</td><td>0</td><td>0</td><td>0</td><td class="">0</td><td>—</td><td>—</td></tr><tr style="opacity:.45"><td class="nm">洪朵</td><td>0</td><td>0</td><td>0</td><td class="">0</td><td>—</td><td>—</td></tr><tr style="opacity:.45"><td class="nm">张霞霞</td><td>0</td><td>0</td><td>0</td><td class="">0</td><td>—</td><td>—</td></tr>
+    </table>
+    <h3 style="margin:18px 0 6px;color:#12203a;font-size:14px">群消息回复明细（实际回复人）</h3>
+    <div class="desc">每条@工单的归属：群 / 被@人 / 时间 / 实际回复人 / 响应时长(分) / 状态。</div>
+    <div style="max-height:380px;overflow:auto">
+    <table>
+      <tr><th>群</th><th>被@人</th><th>时间</th><th>实际回复人</th><th>响应(分)</th><th>状态</th></tr>
+      <tr><td class="gl">供应链能力中心&顾问&异常协作群</td><td>刘思凡、马红霞</td><td>2026-09-29 13:07</td><td class="nm">杨凡凡</td><td>27</td><td class="ok">已回复</td></tr><tr><td class="gl">供应链能力中心&顾问&异常协作群</td><td>杨凡凡</td><td>2026-09-29 13:34</td><td class="nm">—</td><td>—</td><td class="warn">未回复</td></tr><tr><td class="gl">加盟调拨异常沟通群西安</td><td>杨凡凡</td><td>2026-09-29 09:24</td><td class="nm">杨凡凡</td><td>64</td><td class="ok">已回复</td></tr><tr><td class="gl">加盟调拨异常沟通群西安</td><td>杨凡凡</td><td>2026-09-29 09:24</td><td class="nm">杨凡凡</td><td>64</td><td class="ok">已回复</td></tr><tr><td class="gl">加盟调拨异常沟通群西安</td><td>杨凡凡</td><td>2026-09-29 10:16</td><td class="nm">杨凡凡</td><td>12</td><td class="ok">已回复</td></tr><tr><td class="gl">加盟调拨异常沟通群西安</td><td>杨凡凡</td><td>2026-09-29 11:18</td><td class="nm">杨凡凡</td><td>10</td><td class="ok">已回复</td></tr><tr><td class="gl">加盟调拨异常沟通群西安</td><td>杨凡凡</td><td>2026-09-29 11:22</td><td class="nm">杨凡凡</td><td>0</td><td class="ok">已回复</td></tr><tr><td class="gl">加盟调拨异常沟通群西安</td><td>杨凡凡</td><td>2026-09-29 12:07</td><td class="nm">杨凡凡</td><td>1</td><td class="ok">已回复</td></tr><tr><td class="gl">加盟调拨异常沟通群西安</td><td>杨凡凡</td><td>2026-09-29 12:58</td><td class="nm">杨凡凡</td><td>31</td><td class="ok">已回复</td></tr><tr><td class="gl">加盟调拨异常沟通群西安</td><td>杨凡凡</td><td>2026-09-29 12:58</td><td class="nm">杨凡凡</td><td>48</td><td class="ok">已回复</td></tr><tr><td class="gl">加盟调拨异常沟通群西安</td><td>杨凡凡</td><td>2026-09-29 13:29</td><td class="nm">杨凡凡</td><td>4</td><td class="ok">已回复</td></tr><tr><td class="gl">加盟调拨异常沟通群西安</td><td>杨凡凡</td><td>2026-09-29 13:47</td><td class="nm">杨凡凡</td><td>0</td><td class="ok">已回复</td></tr>
+    </table>
+    </div>
+    <h3 style="margin:18px 0 6px;color:#12203a;font-size:14px">外部群消息发送量（精确到人）</h3>
+    <div class="desc">外部客服对接 11 个群，按 7 位目标同事拆分当日发送量（仅统计这几位）。「各群分布」为 群名 条数。</div>
+    <table>
+      <tr><th>姓名</th><th>发送量</th><th style="width:30%">占比</th><th>各群分布</th></tr>
+      <tr style="opacity:.45"><td class="nm">刘思凡</td><td style="width:54px">0</td><td><div class="bar"><i style="width:0%"></i></div></td><td class="dist"></td></tr><tr style="opacity:.45"><td class="nm">王妙星</td><td style="width:54px">0</td><td><div class="bar"><i style="width:0%"></i></div></td><td class="dist"></td></tr><tr><td class="nm">杨凡凡</td><td style="width:54px">13</td><td><div class="bar"><i style="width:100%"></i></div></td><td class="dist">加盟调拨异常沟通群西安 12，供应链能力中心&顾问&异常协作群 1</td></tr><tr style="opacity:.45"><td class="nm">马红霞</td><td style="width:54px">0</td><td><div class="bar"><i style="width:0%"></i></div></td><td class="dist"></td></tr><tr style="opacity:.45"><td class="nm">赵豫思</td><td style="width:54px">0</td><td><div class="bar"><i style="width:0%"></i></div></td><td class="dist"></td></tr><tr style="opacity:.45"><td class="nm">洪朵</td><td style="width:54px">0</td><td><div class="bar"><i style="width:0%"></i></div></td><td class="dist"></td></tr><tr style="opacity:.45"><td class="nm">张霞霞</td><td style="width:54px">0</td><td><div class="bar"><i style="width:0%"></i></div></td><td class="dist"></td></tr>
+    </table>
+  </div>
+
+  <div class="sec">
+    <h2><span class="tag int">内部对接</span>目标同事发送量（精确到人）</h2>
+    <div class="desc">内部 10 个群，按 7 位目标同事拆分当日发送量（仅统计这几位）。「各群分布」为 群名 条数。</div>
+    <div style="max-height:420px;overflow:auto">
+    <table>
+      <tr><th>姓名</th><th>发送量</th><th style="width:30%">占比</th><th>各群分布</th></tr>
+      <tr><td class="nm">刘思凡</td><td style="width:54px">2</td><td><div class="bar"><i style="width:8%"></i></div></td><td class="dist">美美桑内 2</td></tr><tr style="opacity:.45"><td class="nm">王妙星</td><td style="width:54px">0</td><td><div class="bar"><i style="width:0%"></i></div></td><td class="dist"></td></tr><tr><td class="nm">杨凡凡</td><td style="width:54px">20</td><td><div class="bar"><i style="width:86%"></i></div></td><td class="dist">取退货群 20</td></tr><tr><td class="nm">马红霞</td><td style="width:54px">5</td><td><div class="bar"><i style="width:21%"></i></div></td><td class="dist">美美桑内 3，取退货群 1，西安异常 1</td></tr><tr><td class="nm">赵豫思</td><td style="width:54px">23</td><td><div class="bar"><i style="width:100%"></i></div></td><td class="dist">取退货群 22，西安异常 1</td></tr><tr style="opacity:.45"><td class="nm">洪朵</td><td style="width:54px">0</td><td><div class="bar"><i style="width:0%"></i></div></td><td class="dist"></td></tr><tr><td class="nm">张霞霞</td><td style="width:54px">12</td><td><div class="bar"><i style="width:52%"></i></div></td><td class="dist">取退货群 12</td></tr>
+    </table>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="tag pend">业务指标</span>9月29日 运营数据处理量</h2>
+    <div class="desc">飞书电子表格「抖音交付、稽核汇总」→「处理量」子表（sheet=3makOH）9月29日 行 8 项指标；工单处理量取自「各区每日工单（西兰太）」9月29日 列；抖音每日仓内稽核量取自 Base「抖音每日仓内稽核」表（0 条）；取退货量（处理量子表「取退货」列，55 条）。</div>
+    <div class="totalproc">
+      <div class="tp-label">当日处理总量</div>
+      <div class="tp-val">186</div>
+      <div class="tp-sub">处理量 8 项 126 ＋ 抖音每日仓内稽核量 0 ＋ 取退货量 55 ＋ 工单处理量 5</div>
+    </div>
+    <div class="bizgrid">
+      <div class="bcard filled"><div class="blabel">工单处理量</div><div class="bval ok">5</div><div class="bsrc">「各区每日工单（西兰太）」9月29日 列</div></div><div class="bcard filled"><div class="blabel">异常上下架量</div><div class="bval ok">25</div></div><div class="bcard filled"><div class="blabel">对外对接（电话）</div><div class="bval ok">13</div></div><div class="bcard filled"><div class="blabel">对外对接(微信/企微)</div><div class="bval ok">3</div><div class="bsrc">外部群消息量合计 351</div></div><div class="bcard filled"><div class="blabel">异常处理量</div><div class="bval ok">17</div></div><div class="bcard filled"><div class="blabel">外呼量</div><div class="bval ok">2</div></div><div class="bcard filled"><div class="blabel">视频调取量</div><div class="bval ok">66</div></div><div class="bcard empty"><div class="blabel">抖音贴膜</div><div class="bval">无字段</div></div><div class="bcard empty"><div class="blabel">装跑APP</div><div class="bval">无字段</div></div><div class="bcard filled"><div class="blabel">抖音每日仓内稽核量</div><div class="bval ok">0</div><div class="bsrc">抖音每日仓内稽核 9月29日（0 条）</div></div><div class="bcard filled"><div class="blabel">取退货量</div><div class="bval ok">55</div><div class="bsrc">处理量子表「取退货」列</div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="tag pend">分析图</span>工单数据处理量（按区域）</h2>
+    <div class="desc">数据源：「各区每日工单（西兰太）」9月29日 列 · 合计 5 单，按区域分布</div>
+    <div class="chartbox"><svg viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:-apple-system,'Segoe UI','Microsoft YaHei',sans-serif"><rect x="80" y="46" width="610" height="28" rx="6" fill="#f0f2f5"/><rect x="80" y="98" width="610" height="28" rx="6" fill="#f0f2f5"/><rect x="80" y="150" width="610" height="28" rx="6" fill="#f0f2f5"/><line x1="80" y1="36" x2="80" y2="192" stroke="#e8eaed" stroke-width="1" stroke-dasharray="3,3"/><text x="80" y="206" text-anchor="middle" font-size="10" fill="#9aa0a6">0</text><line x1="232" y1="36" x2="232" y2="192" stroke="#e8eaed" stroke-width="1" stroke-dasharray="3,3"/><text x="232" y="206" text-anchor="middle" font-size="10" fill="#9aa0a6">1</text><line x1="385" y1="36" x2="385" y2="192" stroke="#e8eaed" stroke-width="1" stroke-dasharray="3,3"/><text x="385" y="206" text-anchor="middle" font-size="10" fill="#9aa0a6">2</text><line x1="538" y1="36" x2="538" y2="192" stroke="#e8eaed" stroke-width="1" stroke-dasharray="3,3"/><text x="538" y="206" text-anchor="middle" font-size="10" fill="#9aa0a6">3</text><line x1="690" y1="36" x2="690" y2="192" stroke="#e8eaed" stroke-width="1" stroke-dasharray="3,3"/><text x="690" y="206" text-anchor="middle" font-size="10" fill="#9aa0a6">5</text><rect x="80" y="46" width="610" height="28" rx="6" fill="#4285f4"/><text x="385" y="65" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">5 单（100%）</text><text x="70" y="65" text-anchor="end" font-size="14" font-weight="600" fill="#3c4043">西安</text><rect x="80" y="98" width="0" height="28" rx="6" fill="#34a853"/><text x="80" y="117" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">0 单（0%）</text><text x="70" y="117" text-anchor="end" font-size="14" font-weight="600" fill="#3c4043">太原</text><rect x="80" y="150" width="0" height="28" rx="6" fill="#fbbc04"/><text x="80" y="169" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">0 单（0%）</text><text x="70" y="169" text-anchor="end" font-size="14" font-weight="600" fill="#3c4043">兰州</text><text x="14" y="24" font-size="15" font-weight="700" fill="#12203a">工单处理量明细 · 各区每日工单（西兰太） | 当日合计 5 单</text></svg></div>
+  </div>
+  <div class="sec">
+    <h2><span class="tag pend">分析图</span>9月29日 运营数据处理量（各指标）</h2>
+    <div class="desc">数据源：飞书电子表格「处理量」子表 9月29日 行 · 按最新模板共 8 项指标</div>
+    <div class="chartbox"><svg viewBox="0 0 1000 460" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:-apple-system,'Segoe UI','Microsoft YaHei',sans-serif"><line x1="34" y1="60" x2="980" y2="60" stroke="#e8eaed" stroke-width="1"/><text x="26" y="64" text-anchor="end" font-size="11" fill="#9aa0a6">70</text><line x1="34" y1="140" x2="980" y2="140" stroke="#e8eaed" stroke-width="1"/><text x="26" y="144" text-anchor="end" font-size="11" fill="#9aa0a6">52</text><line x1="34" y1="220" x2="980" y2="220" stroke="#e8eaed" stroke-width="1"/><text x="26" y="224" text-anchor="end" font-size="11" fill="#9aa0a6">35</text><line x1="34" y1="300" x2="980" y2="300" stroke="#e8eaed" stroke-width="1"/><text x="26" y="304" text-anchor="end" font-size="11" fill="#9aa0a6">17</text><line x1="34" y1="380" x2="980" y2="380" stroke="#e8eaed" stroke-width="1"/><text x="26" y="384" text-anchor="end" font-size="11" fill="#9aa0a6">0</text><defs><linearGradient id="vg98629" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4285f4" stop-opacity="0.85"/><stop offset="1" stop-color="#4285f4" stop-opacity="1"/></linearGradient></defs><rect x="69" y="266" width="48" height="114" rx="5" fill="url(#vg98629)"/><text x="93" y="259" text-anchor="middle" font-size="13" font-weight="700" fill="#3c4043">25</text><text x="93" y="396" text-anchor="middle" font-size="11" fill="#5f6368">异常上</text><text x="93" y="411" text-anchor="middle" font-size="11" fill="#5f6368">下架量</text><defs><linearGradient id="vg40305" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbbc04" stop-opacity="0.85"/><stop offset="1" stop-color="#fbbc04" stop-opacity="1"/></linearGradient></defs><rect x="187" y="321" width="48" height="59" rx="5" fill="url(#vg40305)"/><text x="211" y="314" text-anchor="middle" font-size="13" font-weight="700" fill="#3c4043">13</text><text x="211" y="396" text-anchor="middle" font-size="11" fill="#5f6368">对外</text><text x="211" y="411" text-anchor="middle" font-size="11" fill="#5f6368">电话</text><defs><linearGradient id="vg6045" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbbc04" stop-opacity="0.85"/><stop offset="1" stop-color="#fbbc04" stop-opacity="1"/></linearGradient></defs><rect x="306" y="366" width="48" height="14" rx="5" fill="url(#vg6045)"/><text x="330" y="359" text-anchor="middle" font-size="13" font-weight="700" fill="#3c4043">3</text><text x="330" y="396" text-anchor="middle" font-size="11" fill="#5f6368">对外对接(微</text><text x="330" y="411" text-anchor="middle" font-size="11" fill="#5f6368">信/企微)</text><defs><linearGradient id="vg29608" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbbc04" stop-opacity="0.85"/><stop offset="1" stop-color="#fbbc04" stop-opacity="1"/></linearGradient></defs><rect x="424" y="302" width="48" height="78" rx="5" fill="url(#vg29608)"/><text x="448" y="295" text-anchor="middle" font-size="13" font-weight="700" fill="#3c4043">17</text><text x="448" y="396" text-anchor="middle" font-size="11" fill="#5f6368">异常处</text><text x="448" y="411" text-anchor="middle" font-size="11" fill="#5f6368">理量</text><defs><linearGradient id="vg32038" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbbc04" stop-opacity="0.85"/><stop offset="1" stop-color="#fbbc04" stop-opacity="1"/></linearGradient></defs><rect x="542" y="371" width="48" height="9" rx="5" fill="url(#vg32038)"/><text x="566" y="364" text-anchor="middle" font-size="13" font-weight="700" fill="#3c4043">2</text><text x="566" y="402" text-anchor="middle" font-size="12" fill="#5f6368">外呼量</text><defs><linearGradient id="vg58278" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4285f4" stop-opacity="0.85"/><stop offset="1" stop-color="#4285f4" stop-opacity="1"/></linearGradient></defs><rect x="660" y="78" width="48" height="302" rx="5" fill="url(#vg58278)"/><text x="684" y="71" text-anchor="middle" font-size="13" font-weight="700" fill="#3c4043">66</text><text x="684" y="402" text-anchor="middle" font-size="12" fill="#5f6368">视频</text><defs><linearGradient id="vg77217" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4285f4" stop-opacity="0.85"/><stop offset="1" stop-color="#4285f4" stop-opacity="1"/></linearGradient></defs><rect x="779" y="380" width="48" height="0" rx="5" fill="url(#vg77217)"/><text x="803" y="373" text-anchor="middle" font-size="13" font-weight="700" fill="#3c4043">0</text><text x="803" y="402" text-anchor="middle" font-size="12" fill="#5f6368">贴膜</text><defs><linearGradient id="vg68809" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4285f4" stop-opacity="0.85"/><stop offset="1" stop-color="#4285f4" stop-opacity="1"/></linearGradient></defs><rect x="897" y="380" width="48" height="0" rx="5" fill="url(#vg68809)"/><text x="921" y="373" text-anchor="middle" font-size="13" font-weight="700" fill="#3c4043">0</text><text x="921" y="402" text-anchor="middle" font-size="12" fill="#5f6368">装跑</text><text x="14" y="24" font-size="15" font-weight="700" fill="#12203a">运营处理量分布 · 处理量新模板 8 项</text></svg></div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="tag int">素养检查</span>9月29日 检出问题 15 条 · 分析与改善方案</h2>
+    <div class="desc">数据源：飞书 Base「素养检查」表（tbl4YocP2AtFq6Wh），筛 9月29日 当日；有问题图片的记为检出问题=是。</div>
+    <div class="acard">
+      <div class="act"><span class="acdept">拆修</span><span class="acdet">检出问题：否</span></div>
+      <div class="acbody"><b>存在问题：</b></div>
+      <div class="acfoot">负责人 泽伟 ｜ 检查人 张霞霞</div>
+    </div><div class="acard">
+      <div class="act"><span class="acdept">发货</span><span class="acdet">检出问题：否</span></div>
+      <div class="acbody"><b>存在问题：</b></div>
+      <div class="acfoot">负责人 王飞 ｜ 检查人 张霞霞</div>
+    </div><div class="acard">
+      <div class="act"><span class="acdept">前辅助</span><span class="acdet">检出问题：否</span></div>
+      <div class="acbody"><b>存在问题：</b></div>
+      <div class="acfoot">负责人 雅杰 ｜ 检查人 张霞霞</div>
+    </div><div class="acard">
+      <div class="act"><span class="acdept">异常</span><span class="acdet">检出问题：否</span></div>
+      <div class="acbody"><b>存在问题：</b></div>
+      <div class="acfoot">负责人 思凡 ｜ 检查人 张霞霞</div>
+    </div><div class="acard">
+      <div class="act"><span class="acdept">后辅助</span><span class="acdet">检出问题：否</span></div>
+      <div class="acbody"><b>存在问题：</b></div>
+      <div class="acfoot">负责人 伯萱 ｜ 检查人 张霞霞</div>
+    </div><div class="acard">
+      <div class="act"><span class="acdept">发货</span><span class="acdet">检出问题：否</span></div>
+      <div class="acbody"><b>存在问题：</b></div>
+      <div class="acfoot">负责人 王飞 ｜ 检查人 杨凡凡</div>
+    </div><div class="acard">
+      <div class="act"><span class="acdept">前辅助</span><span class="acdet">检出问题：否</span></div>
+      <div class="acbody"><b>存在问题：</b></div>
+      <div class="acfoot">负责人 雅杰 ｜ 检查人 杨凡凡</div>
+    </div><div class="acard">
+      <div class="act"><span class="acdept">拆修</span><span class="acdet">检出问题：否</span></div>
+      <div class="acbody"><b>存在问题：</b></div>
+      <div class="acfoot">负责人 泽伟 ｜ 检查人 杨凡凡</div>
+    </div><div class="acard">
+      <div class="act"><span class="acdept">多能</span><span class="acdet">检出问题：否</span></div>
+      <div class="acbody"><b>存在问题：</b></div>
+      <div class="acfoot">负责人 刘俊 ｜ 检查人 杨凡凡</div>
+    </div><div class="acard">
+      <div class="act"><span class="acdept">多能</span><span class="acdet">检出问题：否</span></div>
+      <div class="acbody"><b>存在问题：</b></div>
+      <div class="acfoot">负责人 刘俊 ｜ 检查人 杨凡凡</div>
+    </div><div class="acard">
+      <div class="act"><span class="acdept">收仓</span><span class="acdet">检出问题：否</span></div>
+      <div class="acbody"><b>存在问题：</b></div>
+      <div class="acfoot">负责人 柏杰 ｜ 检查人 赵豫思</div>
+    </div><div class="acard">
+      <div class="act"><span class="acdept">前辅助</span><span class="acdet">检出问题：否</span></div>
+      <div class="acbody"><b>存在问题：</b></div>
+      <div class="acfoot">负责人 雅杰 ｜ 检查人 赵豫思</div>
+    </div><div class="acard">
+      <div class="act"><span class="acdept">拆修</span><span class="acdet">检出问题：否</span></div>
+      <div class="acbody"><b>存在问题：</b></div>
+      <div class="acfoot">负责人 泽伟 ｜ 检查人 赵豫思</div>
+    </div><div class="acard">
+      <div class="act"><span class="acdept">前辅助</span><span class="acdet">检出问题：否</span></div>
+      <div class="acbody"><b>存在问题：</b></div>
+      <div class="acfoot">负责人 雅杰 ｜ 检查人 赵豫思</div>
+    </div><div class="acard">
+      <div class="act"><span class="acdept">拆修</span><span class="acdet">检出问题：否</span></div>
+      <div class="acbody"><b>存在问题：</b></div>
+      <div class="acfoot">负责人 泽伟 ｜ 检查人 赵豫思</div>
+    </div>
+    <h3 style="margin:16px 0 6px;color:#12203a;font-size:14px">问题分类</h3>
+    <div class="cls"><div class="clsc"><div class="cn">15</div><div class="cl">其他类<br><span>拆修「」；发货「」；前辅助「」；异常「」；后辅助「」；发货「」；前辅助「」；拆修「」；多能「」；多能「」；收仓「」；前辅助「」；拆修「」；前辅助「」；拆修「」</span></div></div><div class="clsc"><div class="cn">15</div><div class="cl">9月29日检出问题合计<br><span>有问题图片=检出问题</span></div></div></div>
+    <div class="plan-box">
+  <div class="plan-title">针对当日新增问题的改善方案</div>
+  <div class="plan-list">
+    <div class="plan-item"><div class="plan-num">1</div><div class="plan-body"><strong>问题整改（）</strong>：建立问题复盘机制，明确责任人 <strong>泽伟</strong> 整改要求并回传整改证据。</div></div><div class="plan-item"><div class="plan-num">2</div><div class="plan-body"><strong>问题整改（）</strong>：建立问题复盘机制，明确责任人 <strong>王飞</strong> 整改要求并回传整改证据。</div></div><div class="plan-item"><div class="plan-num">3</div><div class="plan-body"><strong>问题整改（）</strong>：建立问题复盘机制，明确责任人 <strong>雅杰</strong> 整改要求并回传整改证据。</div></div><div class="plan-item"><div class="plan-num">4</div><div class="plan-body"><strong>问题整改（）</strong>：建立问题复盘机制，明确责任人 <strong>思凡</strong> 整改要求并回传整改证据。</div></div><div class="plan-item"><div class="plan-num">5</div><div class="plan-body"><strong>问题整改（）</strong>：建立问题复盘机制，明确责任人 <strong>伯萱</strong> 整改要求并回传整改证据。</div></div><div class="plan-item"><div class="plan-num">6</div><div class="plan-body"><strong>问题整改（）</strong>：建立问题复盘机制，明确责任人 <strong>王飞</strong> 整改要求并回传整改证据。</div></div><div class="plan-item"><div class="plan-num">7</div><div class="plan-body"><strong>问题整改（）</strong>：建立问题复盘机制，明确责任人 <strong>雅杰</strong> 整改要求并回传整改证据。</div></div><div class="plan-item"><div class="plan-num">8</div><div class="plan-body"><strong>问题整改（）</strong>：建立问题复盘机制，明确责任人 <strong>泽伟</strong> 整改要求并回传整改证据。</div></div><div class="plan-item"><div class="plan-num">9</div><div class="plan-body"><strong>问题整改（）</strong>：建立问题复盘机制，明确责任人 <strong>刘俊</strong> 整改要求并回传整改证据。</div></div><div class="plan-item"><div class="plan-num">10</div><div class="plan-body"><strong>问题整改（）</strong>：建立问题复盘机制，明确责任人 <strong>刘俊</strong> 整改要求并回传整改证据。</div></div><div class="plan-item"><div class="plan-num">11</div><div class="plan-body"><strong>问题整改（）</strong>：建立问题复盘机制，明确责任人 <strong>柏杰</strong> 整改要求并回传整改证据。</div></div><div class="plan-item"><div class="plan-num">12</div><div class="plan-body"><strong>问题整改（）</strong>：建立问题复盘机制，明确责任人 <strong>雅杰</strong> 整改要求并回传整改证据。</div></div><div class="plan-item"><div class="plan-num">13</div><div class="plan-body"><strong>问题整改（）</strong>：建立问题复盘机制，明确责任人 <strong>泽伟</strong> 整改要求并回传整改证据。</div></div><div class="plan-item"><div class="plan-num">14</div><div class="plan-body"><strong>问题整改（）</strong>：建立问题复盘机制，明确责任人 <strong>雅杰</strong> 整改要求并回传整改证据。</div></div><div class="plan-item"><div class="plan-num">15</div><div class="plan-body"><strong>问题整改（）</strong>：建立问题复盘机制，明确责任人 <strong>泽伟</strong> 整改要求并回传整改证据。</div></div><div class="plan-item"><div class="plan-num">16</div><div class="plan-body"><strong>当日闭环机制</strong>：稽核问题责任人确认后须回传整改照片，做到「发现—整改—验证」当日闭环。</div></div><div class="plan-item"><div class="plan-num">17</div><div class="plan-body"><strong>周度根因分类</strong>：按周汇总稽核问题（漏检类 / 规范类 / 其他），推动系统性改善而非个案处理。</div></div><div class="plan-item"><div class="plan-num">18</div><div class="plan-body"><strong>纳入绩效</strong>：将「是否检出问题=是」的问题量纳入部门与负责人绩效，提升自查与预防意识。</div></div>
+  </div>
+</div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="tag pend">预警看板</span>9月29日 西安未处理预警 0 条</h2>
+    <div class="desc">数据源：飞书 Base「预警未处理明细」表（tblRJDu3Y96fhbGI），筛 9月29日 当日·运营中心=西安·未申请剔除。按预警类型（各场景）汇总如下，明细含 运营中心/物品编号/预警类型/超时区间/原因反馈。</div>
+    <div class="cls"><div class="clsc"><div class="cn">0</div><div class="cl">当日无未处理预警</div></div></div>
+    <div class="empty">当日（9月29日）西安无未处理预警</div>
+  </div>
+
+  <div class="foot">自动生成时间：2026-09-29 · 数据源：飞书群聊消息 + 飞书电子表格「抖音交付、稽核汇总」+ Base（抖音稽核 / 素养检查 / 预警未处理明细）</div>
+</div></body></html>
