@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>每日工作量输出 · 复盘报告</title>
+<script src="echarts.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Microsoft YaHei",sans-serif;background:#F4F7FB;color:#1f2329;font-size:13px;padding:0 0 40px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.hdr{background:#fff;padding:18px 0;border-bottom:1px solid #E7ECF3}
+.hdr .row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+h1{font-size:20px;font-weight:600;color:#185FA5}
+.sub{color:#7a8699;margin-top:4px;font-size:12px}
+.btns{display:flex;gap:8px}
+.btn{padding:6px 14px;border-radius:6px;border:1px solid #B5D4F4;background:#E6F1FB;color:#185FA5;font-size:12px;cursor:default}
+.btn.pri{background:#185FA5;color:#fff;border-color:#185FA5}
+.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin:20px 0}
+.card{background:#fff;border:1px solid #E7ECF3;border-radius:10px;padding:14px 16px}
+.card .lab{color:#7a8699;font-size:12px}
+.card .num{font-size:26px;font-weight:600;color:#185FA5;margin:6px 0 2px}
+.card .note{color:#9aa5b5;font-size:11px}
+section{background:#fff;border:1px solid #E7ECF3;border-radius:10px;padding:16px 18px;margin-bottom:18px}
+h2{font-size:15px;font-weight:600;color:#1f2329;padding-left:10px;border-left:4px solid #185FA5;margin-bottom:12px}
+h2 .rm{font-weight:400;color:#9aa5b5;font-size:12px;margin-left:8px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{background:#EAF1FA;color:#33415c;font-weight:500;padding:8px 10px;text-align:left;border-bottom:1px solid #DCE5F0}
+td{padding:7px 10px;border-bottom:1px solid #F0F3F8;color:#33415c}
+tr:nth-child(even) td{background:#FAFCFE}
+.r{text-align:right}
+.pill{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px}
+.pill.hi{background:#FCEBEB;color:#A32D2D}
+.pill.mid{background:#FAEEDA;color:#854F0B}
+.pill.low{background:#E1F5EE;color:#0F6E56}
+.charts{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}
+.chart{height:300px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.foot{color:#9aa5b5;font-size:11px;text-align:center;margin-top:8px}
+</style></head><body>
+<div class="hdr"><div class="wrap"><div class="row">
+  <div><h1>每日工作量输出 · 复盘报告</h1>
+  <div class="sub">数据区间 2026-07-19 ~ 2026-10-11 ｜ 取退货 · 消息对接 · SW稽核 三源合一 ｜ 生成于 2026-10-12</div></div>
+  <div class="btns"><span class="btn">取退货</span><span class="btn">消息对接</span><span class="btn">SW稽核</span><span class="btn pri">导出报告</span></div>
+</div></div></div>
+
+<div class="wrap">
+  <div class="cards"><div class="card"><div class="lab">累计处理总量</div><div class="num">12,054</div><div class="note">7月19日 ~ 10月11日</div></div><div class="card"><div class="lab">日均处理量</div><div class="num">177.3</div><div class="note">共 68 天</div></div><div class="card"><div class="lab">T-1 处理总量</div><div class="num">199</div><div class="note">10月11日</div></div><div class="card"><div class="lab">T-1 取退货量</div><div class="num">56</div><div class="note">取退货 · 10月11日</div></div><div class="card"><div class="lab">T-1 SW稽核量</div><div class="num">5</div><div class="note">SW稽核 · 10月11日</div></div></div>
+
+  <section><h2>基础指标明细<span class="rm">10月11日（T-1）</span></h2>
+  <table><tr><th style="width:34%">指标</th><th class="r">数值</th><th class="r">指标</th><th class="r">数值</th></tr><tr><td>处理总量</td><td class="r">199</td><td>异常上下架量</td><td class="r">46</td></tr><tr><td>8点在办</td><td class="r">162</td><td>对外对接（电话）</td><td class="r">15</td></tr><tr><td>外部消息</td><td class="r">433</td><td>对外对接(微信/企微)</td><td class="r">8</td></tr><tr><td>内部消息</td><td class="r">117</td><td>异常处理量</td><td class="r">25</td></tr>
+  </table></section>
+
+  <section><h2>核心洞察（与上一日对比）<span class="rm">10月11日 vs 9月29日</span></h2>
+  <table><tr><th>指标</th><th class="r">10月11日</th><th class="r">9月29日</th><th class="r">环比</th></tr><tr><td>处理总量</td><td class="r">199</td><td class="r">186</td><td class="r">+7%</td></tr><tr><td>取退货量</td><td class="r">35</td><td class="r">55</td><td class="r">-36%</td></tr><tr><td>外部消息</td><td class="r">433</td><td class="r">351</td><td class="r">+23%</td></tr><tr><td>内部消息</td><td class="r">117</td><td class="r">112</td><td class="r">+4%</td></tr><tr><td>素养检查</td><td class="r">10</td><td class="r">15</td><td class="r">-33%</td></tr><tr><td>工单数</td><td class="r">2</td><td class="r">5</td><td class="r">-60%</td></tr><tr><td>抖音稽核</td><td class="r">0</td><td class="r">0</td><td class="r">—</td></tr><tr><td>预警数</td><td class="r">0</td><td class="r">0</td><td class="r">—</td></tr>
+  </table></section>
+
+  <section><h2>复盘洞察（优秀案例）<span class="rm">10月11日</span></h2>
+  <table><tr><th style="width:14%">人员</th><th style="width:16%">事项</th><th>说明</th></tr><tr><td>马红霞</td><td><span class="pill mid">取退货</span></td><td>单日取退货 20 件（全员 56 件）</td></tr><tr><td>张霞霞</td><td><span class="pill mid">取退货</span></td><td>单日取退货 18 件（全员 56 件）</td></tr><tr><td>赵豫思</td><td><span class="pill mid">取退货</span></td><td>单日取退货 18 件（全员 56 件）</td></tr><tr><td>马红霞</td><td><span class="pill mid">消息对接</span></td><td>回复 3 条，平均响应 3.3 分钟</td></tr><tr><td>张霞霞</td><td><span class="pill mid">消息对接</span></td><td>回复 2 条，平均响应 22.5 分钟</td></tr><tr><td>张霞霞</td><td><span class="pill mid">SW稽核</span></td><td>稽核 5 条，耗时 33.4 小时</td></tr>
+  </table></section>
+
+  <div class="charts">
+    <section><h2>T-1 处理量构成</h2><div id="c1" class="chart"></div></section>
+    <section><h2>T-1 业绩占比</h2><div id="c2" class="chart"></div></section>
+  </div>
+
+  <section><h2>1 面临关键问题</h2>
+  <table><tr><th style="width:44%">问题</th><th style="width:10%">等级</th><th>说明</th></tr><tr><td>王妙星、杨凡凡等2人 T-1 取退货量为 0</td><td><span class="pill 高">高</span></td><td>需确认是当日无业务还是漏报，避免固化误判</td></tr><tr><td>抖音贴膜 / 装跑APP 稽核量连续为 0</td><td><span class="pill 中">中</span></td><td>该渠道 T-1 无记录，若业务正常需排查数据源</td></tr><tr><td>处理总量 199（前日 186，环比 +7%）</td><td><span class="pill 中">中</span></td><td>对照 68 天日均 177，波动处于正常区间</td></tr><tr><td>消息对接人均回复量偏低</td><td><span class="pill 低">低</span></td><td>T-1 全员仅回复 7 条，最长响应 96 分钟</td></tr>
+  </table></section>
+
+  <section><h2>2.1 取退货人员明细<span class="rm">近 14 天 · 按人按日（0 标红 / 当期最高标绿）</span></h2>
+  <table><tr><th>人员</th><th class='r'>09/12</th><th class='r'>09/13</th><th class='r'>09/14</th><th class='r'>09/15</th><th class='r'>09/16</th><th class='r'>09/17</th><th class='r'>09/20</th><th class='r'>09/22</th><th class='r'>09/23</th><th class='r'>09/24</th><th class='r'>09/28</th><th class='r'>09/29</th><th class='r'>09/30</th><th class='r'>10/11</th><th class="r">合计</th></tr><tr><td>张霞霞</td><td>34</td><td style="color:#A32D2D;font-weight:500">0</td><td>27</td><td>25</td><td>27</td><td style="color:#A32D2D;font-weight:500">0</td><td>9</td><td style="color:#A32D2D;font-weight:500">0</td><td>40</td><td>16</td><td>20</td><td>12</td><td style="color:#3B6D11;font-weight:500">41</td><td>18</td><td class="r" style="font-weight:500">269</td></tr><tr><td>王妙星</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td>16</td><td>20</td><td>4</td><td style="color:#A32D2D;font-weight:500">0</td><td>5</td><td>30</td><td>8</td><td>8</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#3B6D11;font-weight:500">32</td><td style="color:#A32D2D;font-weight:500">0</td><td class="r" style="font-weight:500">123</td></tr><tr><td>马红霞</td><td>5</td><td>13</td><td>1</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#3B6D11;font-weight:500">20</td><td>13</td><td>18</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td>1</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#3B6D11;font-weight:500">20</td><td class="r" style="font-weight:500">91</td></tr><tr><td>赵豫思</td><td>13</td><td>11</td><td>5</td><td>3</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td>26</td><td style="color:#A32D2D;font-weight:500">0</td><td>4</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#3B6D11;font-weight:500">42</td><td>7</td><td>18</td><td class="r" style="font-weight:500">129</td></tr><tr><td>杨凡凡</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td>10</td><td>17</td><td style="color:#A32D2D;font-weight:500">0</td><td>9</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#3B6D11;font-weight:500">20</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td class="r" style="font-weight:500">56</td></tr>
+  </table></section>
+
+  <section><h2>2.2 消息对接表现<span class="rm">10月11日 · 回复量 / 平均响应(分钟)</span></h2>
+  <table><tr><th>人员</th><th class="r">回复量</th><th class="r">平均响应(分钟)</th></tr><tr><td>张霞霞</td><td>2</td><td class="r">22.5</td></tr><tr><td>王妙星</td><td>1</td><td class="r">3.0</td></tr><tr><td>马红霞</td><td>3</td><td class="r">3.3</td></tr><tr><td>赵豫思</td><td style="color:#A32D2D;font-weight:500">0</td><td class="r">—</td></tr><tr><td>杨凡凡</td><td>1</td><td class="r">96.0</td></tr>
+  </table></section>
+
+  <section><h2>2.3 SW稽核表现（管理建议）<span class="rm">近 10 天 · 按人按日</span></h2>
+  <table><tr><th>人员</th><th class='r'>10/02</th><th class='r'>10/03</th><th class='r'>10/04</th><th class='r'>10/05</th><th class='r'>10/06</th><th class='r'>10/07</th><th class='r'>10/08</th><th class='r'>10/09</th><th class='r'>10/10</th><th class='r'>10/11</th><th class="r">合计</th></tr><tr><td>马红霞</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#3B6D11;font-weight:500">4</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#3B6D11;font-weight:500">4</td><td style="color:#A32D2D;font-weight:500">0</td><td class="r" style="font-weight:500">8</td></tr><tr><td>杨凡凡</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td>4</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td>4</td><td style="color:#3B6D11;font-weight:500">5</td><td style="color:#A32D2D;font-weight:500">0</td><td class="r" style="font-weight:500">13</td></tr><tr><td>赵豫思</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td>4</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td>4</td><td>4</td><td style="color:#3B6D11;font-weight:500">5</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td class="r" style="font-weight:500">17</td></tr><tr><td>张霞霞</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#A32D2D;font-weight:500">0</td><td>6</td><td>6</td><td style="color:#A32D2D;font-weight:500">0</td><td style="color:#3B6D11;font-weight:500">7</td><td>5</td><td>5</td><td class="r" style="font-weight:500">29</td></tr>
+  </table></section>
+
+  <section><h2>3.1 处理总量趋势（全量 68 天）</h2><div id="c3" class="chart"></div></section>
+
+  <section><h2>3.2 各模块量对比（近 14 天周期跑动）</h2><div id="c4" class="chart"></div></section>
+
+  <section><h2>3.3 趋势复盘（处理总量 / 外部消息 / 内部消息 / 取退货）</h2><div id="c5" class="chart"></div></section>
+
+  <div class="foot">数据来源：飞书取退货群 / 消息对接表 / SW稽核表 · dashboard_data.json / gongshi_module_data.json / sw_module_data.json</div>
+</div>
+
+<script>
+var D = {"bar_proc": [[["异常上下架量", 46], ["对外对接（电话）", 15], ["对外对接(微信/企微)", 8], ["异常处理量", 25], ["外呼量", 10], ["视频调取量", 58], ["抖音贴膜", 0], ["装跑APP", 0]]], "pie": [["外部消息", 433], ["内部消息", 117], ["取退货", 56], ["素养检查", 10], ["工单", 2]], "trend_labels": ["7月19日", "7月20日", "7月21日", "7月22日", "7月23日", "7月24日", "7月25日", "7月26日", "7月27日", "7月28日", "7月29日", "7月30日", "7月31日", "8月1日", "8月2日", "8月3日", "8月4日", "8月5日", "8月6日", "8月7日", "8月8日", "8月9日", "8月10日", "8月11日", "8月12日", "8月13日", "8月14日", "8月15日", "8月16日", "8月17日", "8月18日", "8月19日", "8月20日", "8月21日", "8月22日", "8月23日", "8月24日", "8月25日", "8月26日", "8月27日", "8月28日", "8月29日", "8月30日", "8月31日", "9月1日", "9月2日", "9月3日", "9月4日", "9月5日", "9月6日", "9月7日", "9月8日", "9月9日", "9月10日", "9月11日", "9月12日", "9月13日", "9月14日", "9月15日", "9月16日", "9月17日", "9月20日", "9月22日", "9月23日", "9月24日", "9月28日", "9月29日", "10月11日"], "trend_total": [44, 202, 229, 168, 184, 220, 175, 217, 240, 158, 145, 121, 179, 101, 93, 111, 135, 98, 142, 106, 165, 112, 92, 161, 176, 132, 121, 157, 122, 187, 199, 196, 242, 199, 197, 188, 228, 192, 255, 210, 197, 188, 195, 214, 260, 287, 173, 258, 188, 204, 182, 159, 194, 265, 214, 163, 160, 150, 178, 187, 140, 163, 141, 264, 164, 182, 186, 199], "r14_labels": ["9月11日", "9月12日", "9月13日", "9月14日", "9月15日", "9月16日", "9月17日", "9月20日", "9月22日", "9月23日", "9月24日", "9月28日", "9月29日", "10月11日"], "r14_total": [214, 163, 160, 150, 178, 187, 140, 163, 141, 264, 164, 182, 186, 199], "r14_ext": [346, 310, 309, 220, 357, 307, 307, 366, 404, 399, 255, 339, 351, 433], "r14_int": [179, 127, 85, 72, 105, 141, 96, 96, 76, 149, 74, 81, 112, 117], "r14_tuihuo": [88, 52, 24, 33, 44, 57, 41, 48, 32, 74, 24, 28, 75, 56]};
+var AX = {axisLine:{lineStyle:{color:'#C8D2E0'}},axisLabel:{color:'#5a6b85',fontSize:11}};
+var LG = {textStyle:{color:'#33415c',fontSize:11}};
+
+var c1 = echarts.init(document.getElementById('c1'));
+c1.setOption({tooltip:{},grid:{left:60,right:20,top:30,bottom:60},
+  xAxis:{type:'category',data:D.bar_proc[0].map(function(x){return x[0]}),axisLabel:{rotate:25,color:'#5a6b85',fontSize:11},axisLine:{lineStyle:{color:'#C8D2E0'}}},
+  yAxis:{type:'value',axisLabel:{color:'#5a6b85',fontSize:11},splitLine:{lineStyle:{color:'#EEF2F8'}}},
+  series:[{type:'bar',data:D.bar_proc[0].map(function(x){return x[1]}),itemStyle:{color:'#E24B4A',borderRadius:[3,3,0,0]},barWidth:'46%',label:{show:true,position:'top',color:'#A32D2D',fontSize:11}}]});
+
+var c2 = echarts.init(document.getElementById('c2'));
+c2.setOption({tooltip:{trigger:'item',formatter:'{b}: {c} ({d}%)'},legend:{bottom:0,textStyle:LG},
+  series:[{type:'pie',radius:['42%','66%'],center:['50%','44%'],
+    data:D.pie.map(function(x,i){return {name:x[0],value:x[1]}}),
+    itemStyle:{borderRadius:4,borderColor:'#fff',borderWidth:2},
+    label:{formatter:'{b}\n{d}%',color:'#33415c',fontSize:11}}]});
+
+var c3 = echarts.init(document.getElementById('c3'));
+c3.setOption({tooltip:{trigger:'axis'},grid:{left:60,right:20,top:30,bottom:50},
+  xAxis:{type:'category',data:D.trend_labels,axisLabel:{color:'#5a6b85',fontSize:10,interval:6},axisLine:{lineStyle:{color:'#C8D2E0'}}},
+  yAxis:{type:'value',axisLabel:{color:'#5a6b85',fontSize:11},splitLine:{lineStyle:{color:'#EEF2F8'}}},
+  dataZoom:[{type:'inside'}],
+  series:[{name:'处理总量',type:'line',data:D.trend_total,smooth:true,symbolSize:4,
+    lineStyle:{color:'#A32D2D',width:2},itemStyle:{color:'#A32D2D'},
+    areaStyle:{color:'rgba(226,75,74,0.08)'}}]});
+
+var c4 = echarts.init(document.getElementById('c4'));
+c4.setOption({tooltip:{trigger:'axis'},legend:{top:0,textStyle:LG},grid:{left:50,right:20,top:34,bottom:40},
+  xAxis:{type:'category',data:D.r14_labels,axisLabel:{color:'#5a6b85',fontSize:10,rotate:30},axisLine:{lineStyle:{color:'#C8D2E0'}}},
+  yAxis:{type:'value',axisLabel:{color:'#5a6b85',fontSize:11},splitLine:{lineStyle:{color:'#EEF2F8'}}},
+  series:[
+    {name:'处理总量',type:'bar',data:D.r14_total,itemStyle:{color:'#E24B4A'}},
+    {name:'外部消息',type:'bar',data:D.r14_ext,itemStyle:{color:'#378ADD'}},
+    {name:'内部消息',type:'bar',data:D.r14_int,itemStyle:{color:'#EF9F27'}},
+    {name:'取退货',type:'bar',data:D.r14_tuihuo,itemStyle:{color:'#97C459'}}]});
+
+var c5 = echarts.init(document.getElementById('c5'));
+c5.setOption({tooltip:{trigger:'axis'},legend:{top:0,textStyle:LG},grid:{left:50,right:20,top:34,bottom:40},
+  xAxis:{type:'category',data:D.r14_labels,axisLabel:{color:'#5a6b85',fontSize:10,rotate:30},axisLine:{lineStyle:{color:'#C8D2E0'}}},
+  yAxis:{type:'value',axisLabel:{color:'#5a6b85',fontSize:11},splitLine:{lineStyle:{color:'#EEF2F8'}}},
+  series:[
+    {name:'处理总量',type:'line',smooth:true,data:D.r14_total,lineStyle:{color:'#A32D2D',width:2},itemStyle:{color:'#A32D2D'}},
+    {name:'外部消息',type:'line',smooth:true,data:D.r14_ext,lineStyle:{color:'#378ADD',width:2},itemStyle:{color:'#378ADD'}},
+    {name:'内部消息',type:'line',smooth:true,data:D.r14_int,lineStyle:{color:'#EF9F27',width:2},itemStyle:{color:'#EF9F27'}},
+    {name:'取退货',type:'line',smooth:true,data:D.r14_tuihuo,lineStyle:{color:'#0F6E56',width:2},itemStyle:{color:'#0F6E56'}}]});
+
+window.addEventListener('resize',function(){[c1,c2,c3,c4,c5].forEach(function(c){c.resize()})});
+</script></body></html>
