@@ -1574,6 +1574,421 @@ const VIDEO_DATA = {
 
   }
 
+  '2026-10-12':{
+    part1:{cells:22,videos:22,owner:'西安流转专项 wiki（客诉、流转风险识别 · CMI5wxhZ3iRrO1koLzxczUIlnrg 子表3f5583）仓=西安&业务分类=流转专项 实际行数（每日自动抓取）'},
+    part2per:{王妙星:7.5,张霞霞:7.5,马红霞:10,杨凡凡:0,赵豫思:15},
+    part3:{杨凡凡:0,马红霞:0,赵豫思:0,others:'张杰 14'},
+    note:'10-12 张霞霞/王妙星 合并 15（考勤缺失·按均出勤兜底：张7.5/王7.5，待复核）；马红霞 10、杨凡凡 0、赵豫思 15（工艺sw 附件×5）；群视频 杨0/马0/赵0（others：张杰 14）；西安流转专项=22（待复核：抓取失败，沿用 2026-10-11：No module named ’pull_liuzhuan’）。'
+  }
+};
+
+// 异常邮件跟进（飞书邮箱「大数据邮件组-异常待处理明细」每日附件，运营中心=西安）
+
+// 抓取口径：9/14~9/16 全部「异常待处理明细」邮件附件，按运营中心=西安统计数量；暂时无法定位到个人
+
+const MAIL_ANOMALY = {
+
+  range: '2026-09-14 ~ 2026-10-11',
+
+  count: 456,     // 区间合计（运营中心 = 优检西安小型检测中心）
+
+  byDay: {'2026-09-14': 18, '2026-09-15': 14, '2026-09-16': 9, '2026-09-17': 15, '2026-09-18': 8, '2026-09-19': 8, '2026-09-20': 17, '2026-09-21': 16, '2026-09-22': 20, '2026-09-23': 16, '2026-09-24': 9, '2026-09-25': 14, '2026-09-26': 16, '2026-09-27': 22, '2026-09-28': 20, '2026-09-29': 16, '2026-09-30': 16, '2026-10-01': 40, '2026-10-02': 13, '2026-10-03': 15, '2026-10-04': 17, '2026-10-05': 18, '2026-10-06': 15, '2026-10-07': 28, '2026-10-08': 18, '2026-10-09': 14, '2026-10-10': 16, '2026-10-11': 8},
+
+  mails: {'2026-09-15': 6, '2026-09-16': 6, '2026-09-14': 6, '2026-09-17': 6, '2026-09-18': 6, '2026-09-19': 6, '2026-09-20': 6, '2026-09-21': 6, '2026-09-22': 6, '2026-09-23': 6, '2026-09-24': 6, '2026-09-25': 6, '2026-09-26': 6, '2026-09-27': 6, '2026-09-28': 6, '2026-09-29': 6, '2026-09-30': 6, '2026-10-01': 6, '2026-10-02': 6, '2026-10-03': 6, '2026-10-04': 6, '2026-10-05': 6, '2026-10-06': 6, '2026-10-07': 6, '2026-10-08': 6, '2026-10-09': 6, '2026-10-10': 6, '2026-10-11': 6},   // 当日邮件封数
+
+  note: '飞书邮箱「大数据邮件组 <bi.data@atrenew.com>」主题「异常待处理明细」，每日 6 封、附件 xlsx；口径=运营中心「优检西安小型检测中心」条数'
+
+};
+
+// 整数分摊：把 total 按 attended 名单整数分配（floor 后余数随机给其中若干人），未出勤者 0；保证无小数
+
+function intSplit(total, attended){
+
+  const out={}; FIVE.forEach(p=>out[p]=0);
+
+  total=Math.round(total);
+
+  if(total<=0 || !attended.length) return out;
+
+  const per=Math.floor(total/attended.length);
+
+  let rem=total - per*attended.length;
+
+  attended.forEach(p=>out[p]=per);
+
+  const idx=attended.slice();
+
+  for(let i=idx.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=idx[i]; idx[i]=idx[j]; idx[j]=t; } // Fisher-Yates 洗牌
+
+  for(let i=0;i<rem;i++){ out[idx[i]] += 1; }
+
+  return out;
+
+}
+
+// 西安流转专项视频数量（Part1.cells）按当日出勤整数分摊至 王妙星 / 张霞霞：
+
+// 两人均出勤 → 平分（余数随机给其中一人）；仅一人出勤 → 该人全额；均不出勤 → 0
+
+function lzvSplit(day){
+
+  const rec=VIDEO_DATA[day];
+
+  const cells=(rec&&rec.part1&&rec.part1.cells!=null)?Number(rec.part1.cells):0;
+
+  const att=(ATT.attendance&&ATT.attendance[day])||{};
+
+  const attended=[];
+
+  if(att['王妙星']==='出勤') attended.push('王妙星');
+
+  if(att['张霞霞']==='出勤') attended.push('张霞霞');
+
+  return intSplit(cells, attended);
+
+}
+
+// 异常邮件跟进（byDay[day]）按当日出勤在 赵豫思 / 杨凡凡 / 马红霞 中整数平分（未出勤者不参与、也不摊给缺席者），保证无小数
+
+function mailSplit(day){
+
+  const q=(MAIL_ANOMALY&&MAIL_ANOMALY.byDay&&MAIL_ANOMALY.byDay[day])||0;
+
+  const att=(ATT.attendance&&ATT.attendance[day])||{};
+
+  const attended=['赵豫思','杨凡凡','马红霞'].filter(p=>att[p]==='出勤');
+
+  return intSplit(q, attended);
+
+}
+
+// 视频调取「每人当日合计」= part2per + part3 + 西安流转专项视频数量(按出勤整数分摊 lzvSplit)
+
+// part2per 可能为小数（如两人平分得 17.5），导致每人视频量非整数；按「随机给当日出勤中的一人多加 1 凑成整数」消除小数
+
+function vidDayMapBuild(day){
+
+  const out={}; FIVE.forEach(p=>out[p]=0);
+
+  if(!day || !VIDEO_DATA[day]) return out;
+
+  const rec=VIDEO_DATA[day];
+
+  const lzv=lzvSplit(day);
+
+  const att=(ATT.attendance&&ATT.attendance[day])||{};
+
+  const raw={};
+
+  FIVE.forEach(p=>{
+
+    const p2=((rec.part2per&&rec.part2per[p]!=null)?Number(rec.part2per[p]):0);
+
+    const p3=((rec.part3&&rec.part3[p]!=null)?Number(rec.part3[p]):0);
+
+    raw[p]=p2+p3+(lzv[p]||0);
+
+  });
+
+  let rem=0;
+
+  FIVE.forEach(p=>{ const f=Math.floor(raw[p]+1e-9); out[p]=f; rem += (raw[p]-f); });
+
+  // rem 为各人小数累计（多为整数；偶发 0.5 取上限人数），余数 +1 随机分配给当日出勤者：优先补给本身带小数者，再随机补给其余出勤者
+
+  const n=Math.round(rem+1e-9);
+
+  if(n>0){
+
+    // 余数 +1 只补给「本身带小数且当日出勤」的人（fracP），避免把 +1 错加给无小数的出勤者造成错配/总数偏差
+
+    const fracP=FIVE.filter(p=>((raw[p]-Math.floor(raw[p]+1e-9))>1e-9) && att[p]==='出勤');
+
+    const pool = fracP.length ? fracP : FIVE.filter(p=>att[p]==='出勤');
+
+    for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=pool[i]; pool[i]=pool[j]; pool[j]=t; } // Fisher-Yates 洗牌
+
+    for(let i=0;i<n;i++){ out[pool[i%pool.length]] += 1; }
+
+  }
+
+  return out;
+
+}
+
+// （原「西安流转专项视频数量 / 异常邮件跟进」独立汇总块已移除：两项已按出勤整数分摊并入上方每人工作量表的「处理量」与「处理的理论耗时」两块）
+
+function renderAttRange(start,end){
+
+  const wrap=document.getElementById('attTableWrap');
+
+  const lbl=document.getElementById('attRangeLbl');
+
+  if(lbl) lbl.textContent=(start&&end)?(start+' ~ '+end):'—';
+
+  if(!wrap) return;
+
+  const daysAll=Object.keys(ATT.attendance).filter(d=>d>=start&&d<=end).sort();
+
+  const sm=document.getElementById('attSummary');
+
+  if(!daysAll.length){ wrap.innerHTML='<div class="empty">所选区间内无考勤数据</div>'; if(sm) sm.innerHTML='<div class="hint">区间汇总：无考勤数据</div>'; return; }
+
+  // 默认（未手动筛选区间）仅显示最近 3 天明细，多余天数自动隐藏；手动筛选后按所选区间完整呈现
+
+  const ATT_DETAIL_MAX=3;
+
+  const capped = (!gsAttUserFiltered && daysAll.length>ATT_DETAIL_MAX);
+
+  let days;
+
+  if(capped){
+
+    // 「最近 3 天」以数据日(T-1)为锚点往前取，避免把排班表里的未来日期当成最近
+
+    const effEnd=(gsDataMax && gsDataMax<end)?gsDataMax:end;
+
+    const upTo=daysAll.filter(d=>d<=effEnd);
+
+    days=(upTo.length?upTo:daysAll).slice(-ATT_DETAIL_MAX);
+
+  } else {
+
+    days=daysAll;
+
+  }
+
+  const P=ATT.people.filter(p=> gsWhFilter==='all' || (WAREHOUSE[p]||'西安')===gsWhFilter);
+
+  // 汇总始终按所选区间全量统计，避免被默认折叠误导
+
+  const sum={}; P.forEach(p=>sum[p]={on:0,off:0});
+
+  daysAll.forEach(d=>{ P.forEach(p=>{ const s=(ATT.attendance[d][p]||'');
+
+    if(s==='出勤') sum[p].on++; else if(s==='休息'||s==='婚假') sum[p].off++; }); });
+
+  let h='<table><tr><th>日期</th><th>周</th>'+P.map(p=>'<th>'+p+'<br><span class="wh-tag">'+WAREHOUSE[p]+'</span></th>').join('')+'</tr>';
+
+  days.forEach(d=>{
+
+    const wk=ATT_WK[new Date(d).getDay()];
+
+    h+='<tr><td class="nm">'+d.slice(5)+'</td><td>'+wk+'</td>';
+
+    P.forEach(p=>{
+
+      const s=(ATT.attendance[d][p]||'');
+
+      let cls='att-na',txt=s;
+
+      if(s==='出勤'){cls='att-on';txt='出';}
+
+      else if(s==='休息'){cls='att-off';txt='休';}
+
+      else if(s==='婚假'){cls='att-off';txt='婚';}
+
+      h+='<td class="'+cls+'">'+txt+'</td>';
+
+    });
+
+    h+='</tr>';
+
+  });
+
+  h+='</table>';
+
+  if(capped){
+
+    h+='<div class="hint" style="margin-top:6px">考勤明细默认显示最近 '+days.length+' 天（'+days[0].slice(5)+' ~ '+days[days.length-1].slice(5)+'，截至数据日 '+(gsDataMax||end)+'），其余 '+(daysAll.length-days.length)+' 天已隐藏；如需查看完整明细，请用上方「筛选条件 · 区间快速选择 / 应用筛选」选择所需区间。</div>';
+
+  }
+
+  wrap.innerHTML=h;
+
+  if(sm){
+
+    let head='<div class="hint" style="margin:10px 0 4px">区间汇总（全 '+daysAll.length+' 天）：每人出勤 / 休息天数</div>';
+
+    let chips='';
+
+    P.forEach(p=>{ chips+='<div class="vp-attchip"><span class="nm">'+p+'</span><span class="wh-tag">'+WAREHOUSE[p]+'</span><span class="st on">出 '+sum[p].on+'</span><span class="st off">休 '+sum[p].off+'</span></div>'; });
+
+    sm.innerHTML=head+chips;
+
+  }
+
+  renderAttMonth();   // 当月应出勤天数 / 按人出勤计算（随筛选刷新）
+
+}
+
+
+
+// 当月应出勤天数（按日历：周六日休息 + 法定节假日；调休上班的周末计入出勤）
+
+// 2026 法定节假日（放假区间）与调休上班日（周末上班）来源：国务院办公厅 2026 年部分节假日安排通知
+
+function computeShouldAttend(y, m){
+
+  const HOLIDAYS = new Set([
+
+    '2026-01-01','2026-01-02','2026-01-03',
+
+    '2026-02-15','2026-02-16','2026-02-17','2026-02-18','2026-02-19','2026-02-20','2026-02-21','2026-02-22','2026-02-23',
+
+    '2026-04-04','2026-04-05','2026-04-06',
+
+    '2026-05-01','2026-05-02','2026-05-03','2026-05-04','2026-05-05',
+
+    '2026-06-19','2026-06-20','2026-06-21',
+
+    '2026-09-25','2026-09-26','2026-09-27',
+
+    '2026-10-01','2026-10-02','2026-10-03','2026-10-04','2026-10-05','2026-10-06','2026-10-07'
+
+  ]);
+
+  const MAKEUP = new Set([ // 调休上班的周末
+
+    '2026-01-04','2026-02-14','2026-02-28','2026-05-09','2026-09-20','2026-10-10'
+
+  ]);
+
+  const dim = new Date(y, m, 0).getDate();
+
+  let n = 0;
+
+  for(let d=1; d<=dim; d++){
+
+    const dt = new Date(y, m-1, d);
+
+    const wd = dt.getDay();               // 0=周日 .. 6=周六
+
+    const iso = y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+
+    if(wd===0 || wd===6){ if(MAKEUP.has(iso)) n++; }          // 周末 + 调休上班
+
+    else { if(!HOLIDAYS.has(iso)) n++; }                       // 工作日 + 非假日
+
+  }
+
+  return n;
+
+}
+
+function renderAttMonth(){
+
+  const wrap = document.getElementById('attMonthStat');
+
+  if(!wrap) return;
+
+  const dm = (gsDataMax||'').slice(0,7);                        // 当月（数据日所在月）
+
+  if(!dm || dm.length!==7) { wrap.innerHTML=''; return; }
+
+  const y = parseInt(dm.slice(0,4),10), m = parseInt(dm.slice(5,7),10);
+
+  const should = computeShouldAttend(y, m);
+
+  const shouldH = should * 8;
+
+  const P = ATT.people.filter(p=> gsWhFilter==='all' || (WAREHOUSE[p]||'西安')===gsWhFilter);
+
+  const actual = {}; P.forEach(p=>actual[p]=0);
+
+  Object.keys(ATT.attendance).forEach(d=>{
+
+    if(!d.startsWith(dm)) return;
+
+    const row = ATT.attendance[d] || {};
+
+    P.forEach(p=>{ if((row[p]||'')==='出勤') actual[p]++; });
+
+  });
+
+  let h='<div class="lbl" style="margin:10px 0 4px">当月应出勤（'+dm+'）：应出勤 <b>'+should+'</b> 天 · 日均 8H · 应出勤总时长 <b>'+shouldH+'</b> H</div>';
+
+  h+='<table><tr><th>姓名</th><th>仓</th><th>应出勤(天)</th><th>实际出勤(本月)</th><th>出勤率</th><th>应出勤时长(H)</th><th>实际时长(H)</th></tr>';
+
+  P.forEach(p=>{
+
+    const a = actual[p];
+
+    const rate = should ? (a/should*100) : 0;
+
+    h+='<tr><td class="nm">'+p+'</td><td>'+WAREHOUSE[p]+'</td><td>'+should+'</td><td>'+a+'</td><td>'+rate.toFixed(1)+'%</td><td>'+shouldH+'</td><td>'+(a*8)+'</td></tr>';
+
+  });
+
+  h+='</table>';
+
+  h+='<div class="hint" style="margin-top:6px">应出勤天数 = 当月自然日 − 周六日 − 法定假日 + 调休上班日（2026：中秋 9/25–9/27、9/20 周日调休上班；国庆 10/1–10/7、10/10 周六调休上班等）；日均按 8H 计；实际出勤按当月排班「出勤」天数统计。</div>';
+
+  wrap.innerHTML = h;
+
+}
+
+
+
+// ④ 出勤趋势折线图：所选区间内每日出勤人数 + 出勤率（随筛选联动）
+
+function renderAttChart(start,end){
+
+  const el=document.getElementById('attChart'); if(!el) return;
+
+  if(!attChart) attChart=echarts.init(el);
+
+  const days=Object.keys(ATT.attendance).filter(d=>d>=start&&d<=end).sort();
+
+  const P=ATT.people.filter(p=> gsWhFilter==='all' || (WAREHOUSE[p]||'西安')===gsWhFilter);
+
+  if(!days.length){ attChart.clear(); return; }
+
+  const onCnt=[], rate=[];
+
+  days.forEach(d=>{
+
+    const row=ATT.attendance[d]||{};
+
+    let on=0; P.forEach(p=>{ if((row[p]||'')==='出勤') on++; });
+
+    onCnt.push(on); rate.push(+(on/P.length*100).toFixed(1));
+
+  });
+
+  const xlab=days.map(d=>d.slice(5));
+
+  attChart.setOption({
+
+    tooltip:{trigger:'axis'},
+
+    legend:{top:6, textStyle:{fontSize:12}},
+
+    grid:{left:46, right:54, top:50, bottom:38},
+
+    xAxis:{type:'category', data:xlab, boundaryGap:false, axisLabel:{hideOverlap:true}},
+
+    yAxis:[
+
+      {type:'value', name:'出勤人数', min:0, max:P.length, nameTextStyle:{fontSize:11}},
+
+      {type:'value', name:'出勤率%', min:0, max:100, position:'right', nameTextStyle:{fontSize:11}, axisLabel:{formatter:'{value}%'}, splitLine:{show:false}}
+
+    ],
+
+    series:[
+
+      {name:'出勤人数', type:'line', smooth:true, yAxisIndex:0, data:onCnt, symbol:'circle', symbolSize:6,
+
+       itemStyle:{color:'#2c5cc5'}, lineStyle:{width:3}, label:{show:true, position:'top', fontSize:11}},
+
+      {name:'出勤率%', type:'line', smooth:true, yAxisIndex:1, data:rate, symbol:'circle', symbolSize:6,
+
+       itemStyle:{color:'#ea4335'}, lineStyle:{width:2.4, type:'dashed'}}
+
+    ]
+
+  },
 };
 
 // 异常邮件跟进（飞书邮箱「大数据邮件组-异常待处理明细」每日附件，运营中心=西安）
