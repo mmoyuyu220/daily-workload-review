@@ -638,7 +638,7 @@ function renderGongshi(){
       +'<td>'+fmt(r.perTot)+'</td><td class="c-blue"><b>'+r.upph.toFixed(2)+'</b></td></tr>';
   });
   htmlA+='</table>';
-  htmlA+='<div class="hint" style="margin-top:6px">个人总处理量 = 取退货合计 + 消息回复合计 + SW稽核合计 + 视频调取量 + 异常邮件跟进 + 异常处理量；视频调取量为区间内各视频日（Part2 标准作业审核表 + 群视频 Part3 + 西安流转专项视频按当日出勤整数分摊）按人累计，与核心指标「视频调取」口径完全一致、随区间筛选联动；异常处理量（西安外呼登记·完成=是）暂按 赵豫思 / 张霞霞 / 马红霞 / 杨凡凡 当日实际出勤平均分摊。UPPH = 个人总处理量 ÷（区间出勤天数 × 8 小时）。'+hidNote('分项量',hidA)+'</div>';
+  htmlA+='<div class="hint" style="margin-top:6px">个人总处理量 = 取退货合计 + 消息回复合计 + SW稽核合计 + 视频调取量 + 异常邮件跟进 + 异常处理量；视频调取量为区间内各视频日（Part2 标准作业审核表 + 群视频 Part3 + 西安流转专项视频按当日出勤整数分摊）按人累计，与核心指标「视频调取」口径完全一致、随区间筛选联动；异常处理量（西安外呼登记·完成=是）按 赵豫思 / 张霞霞 / 马红霞 / 杨凡凡 当日实际出勤整数分摊（余数随机分配，逐日合计=当日总量）。UPPH = 个人总处理量 ÷（区间出勤天数 × 8 小时）。'+hidNote('分项量',hidA)+'</div>';
   // 表B：处理的理论耗时（区间累计）
   let htmlB='<div class="lbl" style="margin:12px 0 4px">处理的理论耗时</div><table><tr><th class="nm">姓名</th><th>仓</th>'
     + cb.map(c=>'<th>'+c.h+'</th>').join('')
@@ -1265,7 +1265,11 @@ function excSplitCalc(start, end){
       if(d<start||d>end) return;
       const o=EXC.daily_reason[d]||{}; let dayTot=0; for(const k in o) dayTot+=o[k];
       const on=SPLIT.filter(p=> (((ATT.attendance&&ATT.attendance[d])||{})[p])==='出勤');
-      if(dayTot>0 && on.length){ const v=dayTot/on.length; on.forEach(p=> out[p]+=v); }
+      if(dayTot>0 && on.length){
+        // 按当日出勤整数分摊：floor 后余数随机给其中若干人，保证无小数且逐日合计=当日总量
+        const sp=intSplit(dayTot, on);
+        on.forEach(p=> out[p]+= sp[p]);
+      }
     });
   }
   return out;
