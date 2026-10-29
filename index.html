@@ -335,6 +335,10 @@ td.c-blue,td.c-blue b{color:#2c5cc5}
     <div class="chart" id="excLineChart" style="height:340px"></div>
   </div>
   <!-- 每人每天的出勤详情（随上方「筛选条件」联动；默认显示最近 3 天，多余天数自动隐藏） -->
+  <div class="sec-title">每人工作量<span id="gsPerRangeLbl" style="display:none"></span></div>
+  <div id="gsPerTotTable"></div>
+
+
   <div class="m-video">
     <div class="sec-title">📅 各人出勤<span id="attRangeLbl" style="display:none"></span></div>
     <div class="hint">出勤=「上班」(绿)、休息=「休息」(红)、婚假(红)；<b>出* = 缺考勤数据、按默认出勤(8H)计入</b>。每行一日、每列一人；默认仅显示最近 3 天明细，其余天数自动隐藏。如需查看完整明细，请用上方「筛选条件」选择所需区间（如近7天）。下方汇总统计所选区间全量出勤 / 休息天数。成都 / 天津 暂无排班源数据，出勤列留空（待补源后自动并入）。自 2026-10-20 起暂无飞书考勤明细，缺数据日期全部默认出勤（8 小时/天）。</div>
@@ -345,10 +349,6 @@ td.c-blue,td.c-blue b{color:#2c5cc5}
     <div class="hint">所选区间内每日出勤人数（左轴）与出勤率＝当日出勤人数 ÷ 所选仓应出勤人数（仓筛选=全部时为四仓合计 26 人，选西安 5 / 沈阳 3 / 成都 5 / 天津 13 人）（右轴）。</div>
     <div class="chart" id="attChart" style="height:300px"></div>
   </div>
-
-  <div class="sec-title">每人工作量<span id="gsPerRangeLbl" style="display:none"></span></div>
-  <div id="gsPerTotTable"></div>
-
   <div class="sec-title" style="margin-top:16px">流转失误</div>
   <div class="hint">数据来源：飞书 wiki「客诉、流转风险识别」(CMI5wxhZ3iRrO1koLzxczUIlnrg · 子表 3f5583)，按 仓 + 日期 抓取；同类同罚相同 → 合并计次、数量累加。每日 T-1 自动刷新，抓取脚本 _pull_city_reg.py 支持 单日 / --date / --dates / --from--to 区间 / --days / --all 全量补抓。</div>
   <div class="fp-quick" id="regDateBar" style="margin:9px 0 6px;padding-top:9px;border-top:1px dashed #e6eaf0">
@@ -719,11 +719,11 @@ function renderGongshi(){
   // 表B：处理的理论耗时（区间累计）
   let htmlB='<div class="lbl" style="margin:12px 0 4px">处理的理论耗时</div><table><tr><th class="nm">姓名</th><th>仓</th>'
     + cb.map(c=>'<th>'+c.h+'</th>').join('')
-    +'<th class="c-blue">个人总处理量理论耗时<span class="thu">(分)</span></th></tr>';
+    +'<th class="c-blue">个人总处理量理论耗时<span class="thu">(分 = 小时)</span></th></tr>';
   rows.forEach(r=>{
     htmlB+='<tr><td class="nm">'+r.p+'</td><td>'+WAREHOUSE[r.p]+'</td>'
       + cb.map(c=>'<td>'+c.f(r)+'</td>').join('')
-      +'<td class="c-blue"><b>'+r.totTheo.toFixed(1)+'</b></td></tr>';
+      +'<td class="c-blue"><b>'+r.totTheo.toFixed(1)+' 分 = '+(r.totTheo/60).toFixed(2)+' 小时</b></td></tr>';
   });
   htmlB+='</table><div class="hint" style="margin-top:6px">理论耗时 = 处理量 × 标准工时（取退货 4.5 分/件、消息回复 15.72 分/次、SW稽核见「工艺工时」对照表、异常邮件跟进 1 分/条、视频调取 6.05 分/个）；异常处理量暂无工艺工时与分摊标准，理论耗时以「—」占位、暂不计入个人总处理量理论耗时；个人总处理量理论耗时 = 以上各项理论耗时之和。'+hidNote('理论耗时',hidB)+'</div>';
   document.getElementById('gsPerTotTable').innerHTML = htmlA + htmlB;
