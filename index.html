@@ -584,14 +584,14 @@ function _aggOcDays(daysByDate, start, end){
   }
   return out;
 }
-// 稽核量（原流转失误）按人：各仓当日「失误量」（剔除无异常/空白/未填写/无法关机登记）分摊到当日出勤的异常组目标人
+// 稽核量（原流转失误）按人：各仓当日「登记量」（全部登记均计，含无异常）分摊到当日出勤的异常组目标人
 // （整数平分，余数按日期播种随机；与异常处理量旧分摊规则同源）
 function jzPerCalc(start, end){
   const out={}; Object.keys(JZ_TARGETS).forEach(c=>JZ_TARGETS[c].forEach(p=>out[p]=0));
   rngDaysSrc(start,end).forEach(d=>{
     for(const city in REG_DATA){
       const lst=(REG_DATA[city]||{})[d]; if(!lst || !lst.length) continue;
-      let dayTot=0; lst.forEach(r=>{ if(!isNoExcProb(r.prob)) dayTot+=(r.cnt||1); });
+      let dayTot=0; lst.forEach(r=>{ dayTot+=(r.cnt||1); });   // 稽核量列 = 当日登记量（含无异常，全部登记均计）
       if(dayTot<=0) continue;
       const on=(JZ_TARGETS[city]||[]).filter(p=>attRawEff(d,p));
       if(!on.length) continue;
@@ -768,7 +768,7 @@ function renderGongshi(){
     {k:'excQ',  h:'异常处理量<span class="thu">(单·newocs口径A)</span>', f:r=>fmt(r.excQ), n:'异常处理量'},
     {k:'shelfQ',h:'上下架处理量<span class="thu">(条)</span>',          f:r=>fmt(r.shelfQ),    n:'上下架处理量'},
     {k:'gdQ',   h:'工单处理量<span class="thu">(单·待接数据)</span>',   f:r=>fmt(r.gdQ),       n:'工单处理量', force:true},
-    {k:'jzQ',   h:'稽核量<span class="thu">(条·出勤分摊)</span>',       f:r=>fmt(r.jzQ),       n:'稽核量', force:true}
+    {k:'jzQ',   h:'稽核量<span class="thu">(条·登记·出勤分摊)</span>',  f:r=>fmt(r.jzQ),       n:'稽核量（登记量，按当日出勤目标人分摊）', force:true}
   ];
   const COLS_B=[
     {k:'tuihuoTheo', h:'取退货理论耗时<span class="thu">(分)</span>',   f:r=>r.tuihuoTheo.toFixed(1), n:'取退货 4.5 分/件'},
@@ -779,7 +779,7 @@ function renderGongshi(){
     {k:'excH',       h:'异常处理理论耗时<span class="thu">(分)</span>', f:r=>r.excH.toFixed(1),          n:'异常处理 8.6 分/单（9月四仓实测）'},
     {k:'shelfTheo',  h:'上下架理论耗时<span class="thu">(分)</span>',   f:r=>r.shelfTheo.toFixed(1),  n:'上下架 2 分/条（占位标准）'},
     {k:'gdTheo',     h:'工单理论耗时<span class="thu">(分)</span>',     f:r=>'\u2014',                n:'工单处理量（数据源待定）', force:true},
-    {k:'jzTheo',     h:'稽核量理论耗时<span class="thu">(分)</span>',   f:r=>r.jzTheo.toFixed(1),     n:'稽核量 5 分/条（占位标准）', force:true}
+    {k:'jzTheo',     h:'稽核量理论耗时<span class="thu">(分)</span>',   f:r=>r.jzTheo.toFixed(1),     n:'稽核量（登记量）5 分/条（占位标准）', force:true}
   ];
   const ca=COLS_A.filter(c=> c.force || !_zeroCol(c.k)), cb=COLS_B.filter(c=> c.force || !_zeroCol(c.k));
   const hidA=COLS_A.filter(c=> !c.force && _zeroCol(c.k)).map(c=>c.n), hidB=COLS_B.filter(c=> !c.force && _zeroCol(c.k)).map(c=>c.n);
@@ -794,7 +794,7 @@ function renderGongshi(){
       +'<td>'+fmt(r.perTot)+'</td><td>'+r.attHrs.toFixed(1)+'</td><td class="c-blue"><b>'+r.upph.toFixed(2)+'</b></td></tr>';
   });
   htmlA+='</table>';
-  htmlA+='<div class="hint" style="margin-top:6px">个人总处理量 = 取退货合计 + 消息回复合计 + SW稽核合计 + 视频调取量 + 异常邮件跟进 + 异常处理量 + 上下架处理量 + 稽核量 + 工单处理量；视频调取量为区间内各视频日（Part2 标准作业审核表 + 群视频 Part3 + 西安流转专项视频按目标2人「王妙星、张霞霞」当日出勤整数分摊）按人累计，与核心指标「视频调取」口径完全一致、随区间筛选联动；<b>异常处理量自 2026-11-06 起四仓统一为 newocs 口径A实际值</b>（每人每天最后一步处理人归属、该步时间=当天，区间累计；此前西安为外呼登记按出勤分摊、其余三仓为 0，历史数值不再回改）；上下架处理量 = newocs 异常库「上下架记录查询」按操作人归属（区间累计）；稽核量 = 原「流转失误」失误量（剔除无异常登记）按各仓当日出勤的异常组目标人整数平分（余数按日期播种随机）；工单处理量数据源待接，暂为空列占位。UPPH = 个人总处理量 ÷ 区间「实际出勤工时」；实际出勤工时 = 区间内每个出勤日的打卡出勤时长之和（取飞书「考勤明细」AY 列，2026-09-01 起为真实打卡值；该日无打卡记录时按 8 小时/天回退，保证与历史口径连续；<b>自 2026-10-20 起缺考勤明细的日期，全部按默认出勤 8H 计入分母</b>）。'+hidNote('分项量',hidA)+'</div>';
+  htmlA+='<div class="hint" style="margin-top:6px">个人总处理量 = 取退货合计 + 消息回复合计 + SW稽核合计 + 视频调取量 + 异常邮件跟进 + 异常处理量 + 上下架处理量 + 稽核量 + 工单处理量；视频调取量为区间内各视频日（Part2 标准作业审核表 + 群视频 Part3 + 西安流转专项视频按目标2人「王妙星、张霞霞」当日出勤整数分摊）按人累计，与核心指标「视频调取」口径完全一致、随区间筛选联动；<b>异常处理量自 2026-11-06 起四仓统一为 newocs 口径A实际值</b>（每人每天最后一步处理人归属、该步时间=当天，区间累计；此前西安为外呼登记按出勤分摊、其余三仓为 0，历史数值不再回改）；上下架处理量 = newocs 异常库「上下架记录查询」按操作人归属（区间累计）；稽核量 = 原「流转失误」当日登记量（含无异常登记，全部登记均计）按各仓当日出勤的异常组目标人整数平分（余数按日期播种随机）；工单处理量数据源待接，暂为空列占位。UPPH = 个人总处理量 ÷ 区间「实际出勤工时」；实际出勤工时 = 区间内每个出勤日的打卡出勤时长之和（取飞书「考勤明细」AY 列，2026-09-01 起为真实打卡值；该日无打卡记录时按 8 小时/天回退，保证与历史口径连续；<b>自 2026-10-20 起缺考勤明细的日期，全部按默认出勤 8H 计入分母</b>）。'+hidNote('分项量',hidA)+'</div>';
   // 表B：处理的理论耗时（区间累计）
   let htmlB='<div class="lbl" style="margin:12px 0 4px">处理的理论耗时</div><table><tr><th class="nm">姓名</th><th>仓</th>'
     + cb.map(c=>'<th>'+c.h+'</th>').join('')
