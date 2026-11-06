@@ -560,7 +560,7 @@ function renderGongshi(){
   _sec('secCmp', _hasXA);
   ['gsRowTq','gsRowSw','gsRowVid','gsRowMail','gsRowUpph','gsRowExc'].forEach(id=>_sec(id,_hasXA));
   ['gsRowMsg','gsRowTot'].forEach(id=>_sec(id,true));
-  _sec('secException', _hasXA && !gsIsOverview);
+  _sec('secException', true);  // newocs 异常处理量：全四仓均展示（单仓显示该仓；总览四仓分别堆叠，与「流转失误」模块一致）
   const rngDays=gsRangeDays();
   const hasRng = rngDays.length>0;
   const setTxt=(id,v)=>{const e=document.getElementById(id); if(e) e.textContent=v;};
