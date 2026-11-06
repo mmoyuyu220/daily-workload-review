@@ -341,18 +341,8 @@ td.c-blue,td.c-blue b{color:#2c5cc5}
   <div id="gsPerTotTable"></div>
 
 
-  <div class="m-video">
-    <div class="sec-title">📅 各人出勤<span id="attRangeLbl" style="display:none"></span></div>
-    <div class="hint">出勤=「上班」(绿)、休息=「休息」(红)、婚假(红)；<b>出* = 缺考勤数据、按默认出勤(8H)计入</b>。每行一日、每列一人；默认仅显示最近 3 天明细，其余天数自动隐藏。如需查看完整明细，请用上方「筛选条件」选择所需区间（如近7天）。下方汇总统计所选区间全量出勤 / 休息天数。成都 / 天津 暂无排班源数据，出勤列留空（待补源后自动并入）。自 2026-10-20 起暂无飞书考勤明细，缺数据日期全部默认出勤（8 小时/天）。</div>
-    <div id="attTableWrap" class="att-scroll"></div>
-    <div id="attSummary" class="vp-attstrip att-sum"></div>
-    <div id="attMonthStat" class="vp-attstrip att-sum"></div>
-    <div class="sec-title" style="margin-top:14px">出勤趋势分析</div>
-    <div class="hint">所选区间内每日出勤人数（左轴）与出勤率＝当日出勤人数 ÷ 所选仓应出勤人数（仓筛选=全部时为四仓合计 26 人，选西安 5 / 沈阳 3 / 成都 5 / 天津 13 人）（右轴）。</div>
-    <div class="chart" id="attChart" style="height:300px"></div>
-  </div>
   <div class="sec-title" style="margin-top:16px">稽核量</div>
-  <div class="hint">数据来源：飞书 wiki「客诉、流转风险识别」(CMI5wxhZ3iRrO1koLzxczUIlnrg · 子表 3f5583)，按 仓 + 日期 抓取；同类同罚相同 → 合并计次、数量累加。每日 T-1 自动刷新，抓取脚本 _pull_city_reg.py 支持 单日 / --date / --dates / --from--to 区间 / --days / --all 全量补抓。</div>
+  <div class="hint">数据来源：飞书 wiki「客诉、流转风险识别」(CMI5wxhZ3iRrO1koLzxczUIlnrg · 子表 3f5583)，按 仓 + 日期 抓取；同类同罚相同 → 合并计次、数量累加。每日 T-1 自动刷新，抓取脚本 _pull_city_reg.py 支持 单日 / --date / --dates / --from--to 区间 / --days / --all 全量补抓。口径：抓到的行均计为<b>稽核登记量</b>；其中「失误问题」列非空且含「无异常」关键字之外内容的为失误单（失误人员 / 失误问题列不为空即为有失误，含「无异常」的为无失误订单）。</div>
   <div class="fp-quick" id="regDateBar" style="margin:9px 0 6px;padding-top:9px;border-top:1px dashed #e6eaf0">
     <span>抓取方式</span>
     <button type="button" id="regModeRange" class="active">按区间</button>
@@ -364,6 +354,16 @@ td.c-blue,td.c-blue b{color:#2c5cc5}
   </div>
   <div id="regSection"></div>
 
+  <div class="m-video">
+    <div class="sec-title">📅 各人出勤<span id="attRangeLbl" style="display:none"></span></div>
+    <div class="hint">出勤=「上班」(绿)、休息=「休息」(红)、婚假(红)；<b>出* = 缺考勤数据、按默认出勤(8H)计入</b>。每行一日、每列一人；默认仅显示最近 3 天明细，其余天数自动隐藏。如需查看完整明细，请用上方「筛选条件」选择所需区间（如近7天）。下方汇总统计所选区间全量出勤 / 休息天数。成都 / 天津 暂无排班源数据，出勤列留空（待补源后自动并入）。自 2026-10-20 起暂无飞书考勤明细，缺数据日期全部默认出勤（8 小时/天）。</div>
+    <div id="attTableWrap" class="att-scroll"></div>
+    <div id="attSummary" class="vp-attstrip att-sum"></div>
+    <div id="attMonthStat" class="vp-attstrip att-sum"></div>
+    <div class="sec-title" style="margin-top:14px">出勤趋势分析</div>
+    <div class="hint">所选区间内每日出勤人数（左轴）与出勤率＝当日出勤人数 ÷ 所选仓应出勤人数（仓筛选=全部时为四仓合计 26 人，选西安 5 / 沈阳 3 / 成都 5 / 天津 13 人）（右轴）。</div>
+    <div class="chart" id="attChart" style="height:300px"></div>
+  </div>
   <div class="sec-title" style="margin-top:14px">每人工作量对比</div>
   <div class="hint">区间累计：取退货 / 消息回复 / SW稽核 / 视频调取量 / 异常邮件跟进 均为所选区间合计（视频调取量 = 区间内各视频日 Part2+群视频 Part3+西安流转专项视频按人累计，与表格、核心指标口径一致，随区间筛选联动）。</div>
   <div class="chart" id="perChart" style="height:340px"></div>
@@ -740,15 +740,17 @@ function renderGongshi(){
     const VID_RATE = 6.05;
     const SHELF_RATE = 2;    // 上下架 工艺工时占位：2 分/条
     const JZ_RATE = 5;       // 稽核量 工艺工时占位：5 分/条
+    const EXC_RATE = 8.6;    // 异常处理 工艺公时：8.6 分/单（2026-09 四仓 13,834 单实测：异常上架−异常接收 与 完成异常−异常下架 时间差的平均值）
     const tuihuoTheo = +(a*TUH).toFixed(1);
     const vidTheo = +(vid*VID_RATE).toFixed(1);
     const shelfTheo = +(shelfQ*SHELF_RATE).toFixed(1);
     const jzTheo = +(jzQ*JZ_RATE).toFixed(1);
-    const totTheo = +(msgTheo + swH2 + mailH + tuihuoTheo + vidTheo + shelfTheo + jzTheo).toFixed(1);
+    const excTheo = +(excQ*EXC_RATE).toFixed(1);
+    const totTheo = +(msgTheo + swH2 + mailH + tuihuoTheo + vidTheo + excTheo + shelfTheo + jzTheo).toFixed(1);
     const _ah = attHoursOf(p, rngDays);           // 实际打卡出勤工时（无打卡日回退 8H）
     const attDays = _ah.days, attHrs = _ah.h;
     const upph = attHrs>0 ? +(perTot/attHrs).toFixed(2) : 0;
-    return {p,a,b,c,mailQ,vid,excQ,shelfQ,jzQ,gdQ,excH:'\u2014',msgTheo,swH2,mailH,tuihuoTheo,vidTheo,shelfTheo,jzTheo,totTheo,perTot,attDays,attHrs,upph};
+    return {p,a,b,c,mailQ,vid,excQ,shelfQ,jzQ,gdQ,excH:excTheo,msgTheo,swH2,mailH,tuihuoTheo,vidTheo,shelfTheo,jzTheo,totTheo,perTot,attDays,attHrs,upph};
   });
   // 综合日均UPPH = 区间总处理量 ÷ 区间总人时（实际打卡出勤工时；无打卡日回退 8H）
   let totProc=0, totManH=0, totAttDays=0;
@@ -774,7 +776,7 @@ function renderGongshi(){
     {k:'swH2',       h:'SW稽核理论耗时<span class="thu">(分)</span>',   f:r=>fmt(r.swH2),             n:'SW稽核（见「工艺工时」对照表）'},
     {k:'mailH',      h:'异常邮件理论耗时<span class="thu">(分)</span>', f:r=>r.mailH.toFixed(1),      n:'异常邮件跟进 1 分/条'},
     {k:'vidTheo',    h:'视频调取理论耗时<span class="thu">(分)</span>', f:r=>r.vidTheo.toFixed(1),    n:'视频调取 6.05 分/个'},
-    {k:'excH',       h:'异常处理理论耗时<span class="thu">(分)</span>', f:r=>'\u2014',                n:'异常处理理论耗时'},
+    {k:'excH',       h:'异常处理理论耗时<span class="thu">(分)</span>', f:r=>r.excH.toFixed(1),          n:'异常处理 8.6 分/单（9月四仓实测）'},
     {k:'shelfTheo',  h:'上下架理论耗时<span class="thu">(分)</span>',   f:r=>r.shelfTheo.toFixed(1),  n:'上下架 2 分/条（占位标准）'},
     {k:'gdTheo',     h:'工单理论耗时<span class="thu">(分)</span>',     f:r=>'\u2014',                n:'工单处理量（数据源待定）', force:true},
     {k:'jzTheo',     h:'稽核量理论耗时<span class="thu">(分)</span>',   f:r=>r.jzTheo.toFixed(1),     n:'稽核量 5 分/条（占位标准）', force:true}
@@ -802,14 +804,14 @@ function renderGongshi(){
       + cb.map(c=>'<td>'+c.f(r)+'</td>').join('')
       +'<td class="c-blue"><b>'+r.totTheo.toFixed(1)+' 分 = '+(r.totTheo/60).toFixed(2)+' 小时</b></td></tr>';
   });
-  htmlB+='</table><div class="hint" style="margin-top:6px">理论耗时 = 处理量 × 标准工时（取退货 4.5 分/件、消息回复 15.72 分/次、SW稽核见「工艺工时」对照表、异常邮件跟进 1 分/条、视频调取 6.05 分/个、上下架 2 分/条、稽核量 5 分/条——后两项为占位标准，准确值待工艺确认后替换）；异常处理量暂无工艺工时标准，理论耗时以「—」占位；工单处理量数据源待接、以「—」占位；个人总处理量理论耗时 = 以上各项理论耗时之和。'+hidNote('理论耗时',hidB)+'</div>';
+  htmlB+='</table><div class="hint" style="margin-top:6px">理论耗时 = 处理量 × 标准工时（取退货 4.5 分/件、消息回复 15.72 分/次、SW稽核见「工艺工时」对照表、异常邮件跟进 1 分/条、视频调取 6.05 分/个、上下架 2 分/条、稽核量 5 分/条——后两项为占位标准，准确值待工艺确认后替换）；<b>异常处理 8.6 分/单</b>（2026-09 四仓全量 13,834 单实测：明细「异常上架 − 异常接收」均值 5.8 分 + 「完成异常 − 异常下架」均值 11.5 分，两段时间差合并平均，结果存 _exc_gongshi_result.json）；工单处理量数据源待接、以「—」占位；个人总处理量理论耗时 = 以上各项理论耗时之和。'+hidNote('理论耗时',hidB)+'</div>';
   document.getElementById('gsPerTotTable').innerHTML = htmlA + htmlB;
 
-  // ④ 区间汇总口径（含异常邮件跟进、视频调取、上下架处理量、稽核量；与每人表口径一致）
-  let shelfAll=0, shelfHAll=0, jzAll=0, jzHAll=0;
-  rows.forEach(r=>{ shelfAll+=r.shelfQ; shelfHAll+=r.shelfTheo; jzAll+=r.jzQ; jzHAll+=r.jzTheo; });
+  // ④ 区间汇总口径（含异常邮件跟进、视频调取、异常处理、上下架处理量、稽核量；与每人表口径一致）
+  let shelfAll=0, shelfHAll=0, jzAll=0, jzHAll=0, excHAll=0;
+  rows.forEach(r=>{ shelfAll+=r.shelfQ; shelfHAll+=r.shelfTheo; jzAll+=r.jzQ; jzHAll+=r.jzTheo; excHAll+=r.excH; });
   const cumQ = totProc;   // 每日处理量卡片 = 每人表「个人总处理量」合计（含全部新列，口径一致）
-  const cumH = +((th+mh+sh+mailq+vh+shelfHAll+jzHAll).toFixed(1));
+  const cumH = +((th+mh+sh+mailq+vh+excHAll+shelfHAll+jzHAll).toFixed(1));
   const nDays=rngDays.length||1;
   setTxt('gsDaysCnt', hasRng?rngDays.length:'—');
 
@@ -1874,10 +1876,9 @@ function regOnCityChange(){
 // 无异常判定：空白 / 无异常 / （未填写） / 含关键字「无法关机」均视为无异常（不算失误）
 function isNoExcProb(p){
   const t=String(p||'').trim();
-  if(!t) return true;
-  if(t==='无异常' || t==='（未填写）') return true;
-  if(t.indexOf('无法关机')>=0) return true;
-  return false;
+  if(!t || t==='（未填写）') return true;
+  if(t.indexOf('无异常')>=0) return true;   // 失误问题列含「无异常」= 无失误订单
+  return false;                              // 其余非空内容（含 无法关机 等）均计失误
 }
 function regRows(city, start, end){
   const reg = (REG_DATA&&REG_DATA[city])||{};
@@ -1900,7 +1901,7 @@ function regAgg(city, start, end){
   for(const d in reg){ if(d<start||d>end) continue;
     (reg[d]||[]).forEach(e=>{
       const t=String(e.prob||'').trim();
-      if(isNoExcProb(t)) return;                         // 无异常/空白/（未填写）/无法关机：不计入失误统计
+      if(isNoExcProb(t)) return;                         // 含「无异常」/空白/（未填写）：不计入失误统计
       const k=e.yw+'|'+e.who+'|'+e.punish; agg[k]=(agg[k]||0)+e.cnt; }); }
   return agg;
 }
@@ -1912,17 +1913,49 @@ function renderRegSection(){
   let html='';
   if(gsIsOverview){
     const cities=gsCitySet();
-    let h='<table><tr><th>仓</th><th>稽核量总次数</th><th>涉及人员数</th><th>主要业务分类(Top3)</th></tr>';
+    const days={};                                // date -> {city:{tot,miss}}
+    const summ=[];
     cities.forEach(c=>{
-      const agg=regAgg(c, start, end);
-      const total=Object.values(agg).reduce((a,b)=>a+b,0);
-      // 同上：「（未填写）」是人员空缺占位，不算一个真实人员
-      const who=new Set(Object.keys(agg).map(k=>k.split('|')[1]).filter(w=>w!=='（未填写）'&&w!=='—'));
-      const byYw={}; Object.keys(agg).forEach(k=>{const yw=k.split('|')[0]; byYw[yw]=(byYw[yw]||0)+agg[k];});
+      const all=regRows(c, start, end);
+      let tot=0, miss=0;
+      const who=new Set(); const byYw={};
+      all.forEach(r=>{
+        const o=days[r.date]||(days[r.date]={}); const m=o[c]||(o[c]={tot:0,miss:0});
+        m.tot+=r.cnt; tot+=r.cnt;                 // 登记量 = 全部登记（含无异常）
+        if(!isNoExcProb(r.prob)){
+          m.miss+=r.cnt; miss+=r.cnt;             // 失误量 = 失误问题列非空且不含「无异常」
+          byYw[r.yw]=(byYw[r.yw]||0)+r.cnt;
+          String(r.who||'').split(/[、,，;；\/]/).forEach(w=>{ w=w.trim(); if(w && w!=='（未填写）' && w!=='—') who.add(w); });
+        }
+      });
       const top=Object.entries(byYw).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]+' '+x[1]).join('、')||'—';
-      h+='<tr><td>'+c+'</td><td>'+total+'</td><td>'+who.size+'</td><td>'+top+'</td></tr>';
+      summ.push({c, tot, miss, who:who.size, top});
+    });
+    let h='<table><tr><th>仓</th><th>稽核登记量</th><th>失误量</th><th>无异常量</th><th>失误占比</th><th>涉及人员数</th><th>主要业务分类(Top3)</th></tr>';
+    summ.forEach(s=>{
+      h+='<tr><td>'+s.c+'</td><td>'+fmt(s.tot)+'</td><td>'+fmt(s.miss)+'</td><td>'+fmt(s.tot-s.miss)+'</td><td>'+(s.tot>0?((s.miss/s.tot*100).toFixed(1)+'%'):'—')+'</td><td>'+s.who+'</td><td>'+s.top+'</td></tr>';
     });
     h+='</table>';
+    const dks=Object.keys(days).sort().reverse();
+    if(dks.length){                                 // 四仓每日登记量（不写明细）
+      h+='<div class="lbl" style="margin:10px 0 4px">四仓每日登记量（登记量 / 其中失误）</div>';
+      h+='<table><tr><th>日期</th>';
+      cities.forEach(c=>{ h+='<th>'+c+' 登记</th><th>'+c+' 失误</th>'; });
+      h+='</tr>';
+      const gt={}, gm={};
+      dks.forEach(d=>{
+        h+='<tr><td>'+d+'</td>';
+        cities.forEach(c=>{
+          const o=(days[d]&&days[d][c])||{tot:0,miss:0};
+          gt[c]=(gt[c]||0)+o.tot; gm[c]=(gm[c]||0)+o.miss;
+          h+='<td>'+fmt(o.tot)+'</td><td>'+fmt(o.miss)+'</td>';
+        });
+        h+='</tr>';
+      });
+      h+='<tr><td><b>区间合计</b></td>';
+      cities.forEach(c=>{ h+='<td><b>'+fmt(gt[c]||0)+'</b></td><td><b>'+fmt(gm[c]||0)+'</b></td>'; });
+      h+='</tr></table>';
+    }
     html+=h;
   } else {
     const city=gsWhFilter;
@@ -1946,10 +1979,12 @@ function renderRegSection(){
     const mrows=Object.values(merged).sort((a,b)=>{ if(a.date!==b.date) return a.date<b.date?1:-1; return b.cnt-a.cnt; });
     if(!all.length){ html+='<div class="hint">'+(regDayMode?('当日（'+start+'）'):('当前区间（'+start+' ~ '+end+'）'))+'无稽核量登记数据</div>'; }
     else{
-      let h='<div class="hint" style="margin-bottom:4px">'+(regDayMode?('当日（'+start+'）'):('当前区间（'+start+' ~ '+end+'）'))+'共登记 <b>'+fmt(tot)+'</b> '+unit+'，其中失误 <b>'+fmt(totMiss)+'</b> '+unit+'、无异常 <b>'+fmt(tot-totMiss)+'</b> '+unit+'（无异常 / 空白 / 未填写 / 无法关机 均按无异常统计）。</div>';
+      let h='<div class="hint" style="margin-bottom:4px">'+(regDayMode?('当日（'+start+'）'):('当前区间（'+start+' ~ '+end+'）'))+'稽核登记 <b>'+fmt(tot)+'</b> '+unit+'，其中失误 <b>'+fmt(totMiss)+'</b> '+unit+'、无异常 <b>'+fmt(tot-totMiss)+'</b> '+unit+'（失误问题列含「无异常」及空白 / 未填写 的登记不计失误）。</div>';
       if(!regDayMode && dayKeys.length>1){      // 区间模式（>1 天）：每日登记汇总
         h+='<div class="lbl" style="margin:8px 0 4px">每日登记汇总</div><table><tr><th>日期</th><th>登记合计('+unit+')</th><th>失误('+unit+')</th><th>无异常('+unit+')</th></tr>';
-        dayKeys.forEach(d=>{ const o=byDay[d]; h+='<tr><td>'+d+'</td><td>'+o.tot+'</td><td>'+o.miss+'</td><td>'+o.na+'</td></tr>'; });
+        const st2={tot:0,miss:0,na:0};
+        dayKeys.forEach(d=>{ const o=byDay[d]; st2.tot+=o.tot; st2.miss+=o.miss; st2.na+=o.na; h+='<tr><td>'+d+'</td><td>'+o.tot+'</td><td>'+o.miss+'</td><td>'+o.na+'</td></tr>'; });
+        h+='<tr><td><b>区间合计</b></td><td><b>'+fmt(st2.tot)+'</b></td><td><b>'+fmt(st2.miss)+'</b></td><td><b>'+fmt(st2.na)+'</b></td></tr>';
         h+='</table>';
       }
       if(!mrows.length){ h+='<div class="hint">所选范围内无失误'+unit+'（全部登记为无异常）。</div>'; }
