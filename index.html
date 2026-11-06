@@ -323,16 +323,11 @@ td.c-blue,td.c-blue b{color:#2c5cc5}
   <div class="chart" id="gsCmpChart" style="height:300px"></div>
   </div>
 
-  <!-- 异常处理量（飞书外呼登记表 · 完成情况=是；随区间筛选联动，仅西安板块展示） -->
+    <!-- 异常处理量（newocs 异常单管理 · 按异常类型 · 各仓独立展示） -->
   <div class="m-video" id="secException">
     <div class="sec-title">📊 异常处理量<span id="excRangeLbl" style="display:none"></span></div>
-    <div class="hint">数据源：飞书「外呼登记表」。抓取口径：日期带年份且=2026、≥2026-09-14、完成情况=是、异常原因含指定关键词（无单号 / 数量不对 / 三催 / 呆滞机器 / 调拨 / 单物不符 / 拒收件）。随上方区间筛选联动，仅西安板块展示。</div>
-    <div id="excDetailTable"></div>
-    <div class="sec-title" style="margin-top:14px">异常原因占比</div>
-    <div class="chart" id="excPieChart" style="height:320px"></div>
-    <div class="sec-title" style="margin-top:14px">每日异常处理量分析（折线）</div>
-    <div class="hint">提示：点击图例可显示 / 隐藏对应原因；折线断开处表示该日暂无该原因数据。</div>
-    <div class="chart" id="excLineChart" style="height:340px"></div>
+    <div class="hint">数据源：newocs 异常单管理（状态变更时间=当天）。口径A：最后一步处理人归属、该步时间=当天。按所选仓分别展示各仓数据（不汇总）。快照日期：<b id="excSnapDate">—</b>。</div>
+    <div id="excExceptionBody"></div>
   </div>
   <!-- 每人每天的出勤详情（随上方「筛选条件」联动；默认显示最近 3 天，多余天数自动隐藏） -->
   <div class="sec-title">每人工作量<span id="gsPerRangeLbl" style="display:none"></span></div>
@@ -438,6 +433,7 @@ const G = window.GONGSHI_DATA;
 const S = window.SW_DATA;
 const REG_DATA = window.REG_DATA || {};
 window.EXC_DATA = {"total":873,"updated":"2026-11-06","source":"外呼登记表(shtcn4wGV5NuGCCDpir3qU2UQXd / sheet 外呼登记表)","min_d":"2026-09-14","max_d":"2026-11-06","reason_order":["无单号","数量不对","三催","呆滞机器","调拨","单物不符","拒收件"],"by_date":{"2026-09-14":19,"2026-09-15":30,"2026-09-16":18,"2026-09-17":20,"2026-09-18":17,"2026-09-19":10,"2026-09-20":11,"2026-09-21":23,"2026-09-22":13,"2026-09-23":15,"2026-09-24":19,"2026-09-25":12,"2026-09-26":25,"2026-09-27":20,"2026-09-28":22,"2026-09-29":8,"2026-09-30":17,"2026-10-01":15,"2026-10-02":18,"2026-10-03":12,"2026-10-04":13,"2026-10-05":13,"2026-10-06":18,"2026-10-07":10,"2026-10-08":13,"2026-10-09":20,"2026-10-10":10,"2026-10-11":13,"2026-10-12":10,"2026-10-13":15,"2026-10-14":15,"2026-10-15":19,"2026-10-16":24,"2026-10-17":20,"2026-10-18":18,"2026-10-19":18,"2026-10-20":21,"2026-10-21":14,"2026-10-22":19,"2026-10-23":17,"2026-10-24":19,"2026-10-25":15,"2026-10-26":19,"2026-10-27":18,"2026-10-28":15,"2026-10-29":14,"2026-10-30":16,"2026-10-31":16,"2026-11-01":14,"2026-11-02":18,"2026-11-03":19,"2026-11-04":13,"2026-11-05":11,"2026-11-06":2},"by_reason":{"无单号":371,"调拨":242,"拒收件":135,"数量不对":107,"单物不符":13,"三催":4,"呆滞机器":1},"daily_reason":{"2026-09-14":{"无单号":10,"调拨":4,"拒收件":4,"单物不符":1},"2026-09-15":{"拒收件":13,"无单号":12,"单物不符":2,"调拨":2,"数量不对":1},"2026-09-16":{"无单号":9,"调拨":8,"数量不对":1},"2026-09-17":{"无单号":16,"调拨":2,"数量不对":1,"拒收件":1},"2026-09-18":{"无单号":10,"调拨":4,"数量不对":3},"2026-09-19":{"拒收件":5,"调拨":3,"无单号":1,"数量不对":1},"2026-09-20":{"数量不对":4,"拒收件":4,"调拨":2,"无单号":1},"2026-09-21":{"无单号":9,"调拨":6,"拒收件":6,"数量不对":2},"2026-09-22":{"无单号":7,"调拨":3,"数量不对":3},"2026-09-23":{"调拨":7,"无单号":4,"拒收件":3,"数量不对":1},"2026-09-24":{"调拨":10,"拒收件":3,"无单号":3,"数量不对":3},"2026-09-25":{"无单号":5,"数量不对":3,"拒收件":3,"调拨":1},"2026-09-26":{"无单号":12,"调拨":7,"拒收件":3,"数量不对":3},"2026-09-27":{"无单号":9,"调拨":5,"拒收件":3,"数量不对":3},"2026-09-28":{"调拨":8,"无单号":7,"拒收件":4,"数量不对":3},"2026-09-29":{"调拨":4,"无单号":2,"拒收件":2},"2026-09-30":{"无单号":8,"调拨":6,"三催":2,"数量不对":1},"2026-10-01":{"调拨":5,"数量不对":4,"无单号":3,"拒收件":3},"2026-10-02":{"无单号":9,"调拨":7,"数量不对":2},"2026-10-03":{"无单号":6,"调拨":2,"拒收件":2,"数量不对":1,"三催":1},"2026-10-04":{"无单号":4,"拒收件":3,"调拨":3,"数量不对":2,"单物不符":1},"2026-10-05":{"无单号":8,"数量不对":2,"拒收件":2,"调拨":1},"2026-10-06":{"无单号":8,"数量不对":4,"调拨":4,"拒收件":1,"单物不符":1},"2026-10-07":{"调拨":5,"无单号":2,"拒收件":2,"数量不对":1},"2026-10-08":{"调拨":7,"无单号":4,"单物不符":2},"2026-10-09":{"无单号":12,"调拨":4,"拒收件":3,"数量不对":1},"2026-10-10":{"调拨":4,"无单号":3,"数量不对":2,"拒收件":1},"2026-10-11":{"无单号":6,"拒收件":3,"调拨":2,"数量不对":2},"2026-10-12":{"无单号":5,"调拨":2,"数量不对":1,"单物不符":1,"拒收件":1},"2026-10-13":{"拒收件":6,"无单号":6,"调拨":2,"数量不对":1},"2026-10-14":{"调拨":7,"无单号":5,"拒收件":3},"2026-10-15":{"无单号":7,"数量不对":5,"调拨":3,"拒收件":2,"单物不符":2},"2026-10-16":{"无单号":10,"调拨":8,"拒收件":3,"数量不对":2,"单物不符":1},"2026-10-17":{"无单号":14,"调拨":3,"拒收件":2,"数量不对":1},"2026-10-18":{"无单号":7,"数量不对":4,"调拨":4,"拒收件":3},"2026-10-19":{"调拨":9,"无单号":7,"数量不对":1,"拒收件":1},"2026-10-20":{"调拨":9,"无单号":7,"数量不对":3,"单物不符":1,"拒收件":1},"2026-10-21":{"数量不对":4,"调拨":4,"无单号":3,"拒收件":3},"2026-10-22":{"调拨":8,"无单号":7,"拒收件":3,"数量不对":1},"2026-10-23":{"无单号":7,"调拨":5,"拒收件":3,"数量不对":2},"2026-10-24":{"拒收件":12,"无单号":4,"调拨":2,"数量不对":1},"2026-10-25":{"无单号":8,"调拨":5,"拒收件":1,"数量不对":1},"2026-10-26":{"无单号":6,"调拨":6,"数量不对":2,"拒收件":2,"呆滞机器":1,"单物不符":1,"三催":1},"2026-10-27":{"调拨":8,"无单号":8,"数量不对":1,"拒收件":1},"2026-10-28":{"无单号":6,"调拨":5,"拒收件":3,"数量不对":1},"2026-10-29":{"无单号":11,"数量不对":2,"调拨":1},"2026-10-30":{"无单号":9,"数量不对":3,"调拨":3,"拒收件":1},"2026-10-31":{"无单号":10,"拒收件":4,"数量不对":1,"调拨":1},"2026-11-01":{"数量不对":5,"无单号":3,"拒收件":3,"调拨":3},"2026-11-02":{"无单号":8,"调拨":5,"数量不对":4,"拒收件":1},"2026-11-03":{"无单号":8,"调拨":7,"数量不对":3,"拒收件":1},"2026-11-04":{"无单号":8,"调拨":4,"拒收件":1},"2026-11-05":{"无单号":7,"数量不对":3,"调拨":1},"2026-11-06":{"调拨":1,"数量不对":1}}};
+window.EXC_NEWOC = {"date": "2026-11-06", "data": {"3": {"oc_name": "成都", "per_person": [{"name": "黄语文", "total": 0, "types": {}}, {"name": "李敏", "total": 2, "types": {"账号原因清除失败": 1, "没有代拍单号": 1}}, {"name": "徐巧萍", "total": 5, "types": {"客户拒收件": 3, "没有代拍单号": 2}}], "type_ratio": [{"type": "数量不对", "count": 12, "pct": 57.1}, {"type": "客户拒收件", "count": 3, "pct": 14.3}, {"type": "没有代拍单号", "count": 3, "pct": 14.3}, {"type": "销售机器属性异常", "count": 2, "pct": 9.5}, {"type": "账号原因清除失败", "count": 1, "pct": 4.8}]}, "5": {"oc_name": "天津", "per_person": [{"name": "李婷", "total": 0, "types": {}}, {"name": "罗振", "total": 48, "types": {"退货无申请": 14, "开机密码异常": 11, "配件缺失": 6, "客户拒收件": 3, "imei不一致": 3, "有开机密码/账号ID密码": 2, "转寄": 1, "非售后物品": 1, "没有对应的订单": 1, "没有代拍单号": 1, "退货物品无标签": 1, "多物品/未出库/无标/多标": 1, "少物品": 1, "不能开机": 1, "套机补下订单": 1}}, {"name": "王俊双", "total": 68, "types": {"账号密码异常": 25, "开机密码异常": 19, "没有代拍单号": 9, "退货无申请": 5, "没有对应的订单": 4, "账号原因清除失败": 3, "imei不一致": 2, "转寄": 1}}, {"name": "王彤", "total": 108, "types": {"开机密码异常": 52, "账号密码异常": 46, "没有代拍单号": 8, "没有对应的订单": 1, "转寄": 1}}, {"name": "张红楠", "total": 0, "types": {}}], "type_ratio": [{"type": "开机密码异常", "count": 98, "pct": 28.6}, {"type": "账号密码异常", "count": 85, "pct": 24.8}, {"type": "无适配器", "count": 28, "pct": 8.2}, {"type": "退货无申请", "count": 26, "pct": 7.6}, {"type": "没有代拍单号", "count": 23, "pct": 6.7}, {"type": "初判拒退", "count": 21, "pct": 6.1}, {"type": "数量不对", "count": 19, "pct": 5.5}, {"type": "没有对应的订单", "count": 8, "pct": 2.3}, {"type": "配件缺失", "count": 6, "pct": 1.7}, {"type": "销售机器属性异常", "count": 5, "pct": 1.5}, {"type": "imei不一致", "count": 5, "pct": 1.5}, {"type": "客户拒收件", "count": 4, "pct": 1.2}, {"type": "转寄", "count": 3, "pct": 0.9}, {"type": "账号原因清除失败", "count": 3, "pct": 0.9}, {"type": "有开机密码/账号ID密码", "count": 2, "pct": 0.6}, {"type": "非售后物品", "count": 1, "pct": 0.3}, {"type": "退货物品无标签", "count": 1, "pct": 0.3}, {"type": "多物品/未出库/无标/多标", "count": 1, "pct": 0.3}, {"type": "C端销售质量风险异常", "count": 1, "pct": 0.3}, {"type": "少物品", "count": 1, "pct": 0.3}, {"type": "不能开机", "count": 1, "pct": 0.3}, {"type": "套机补下订单", "count": 1, "pct": 0.3}]}, "577": {"oc_name": "西安", "per_person": [{"name": "张霞霞", "total": 0, "types": {}}, {"name": "杨凡凡", "total": 1, "types": {"配件缺失": 1}}, {"name": "马红霞", "total": 8, "types": {"配件缺失": 3, "账号原因清除失败": 2, "多个机器对应多个代拍单": 1, "没有代拍单号": 1, "少物品": 1}}], "type_ratio": [{"type": "配件缺失", "count": 4, "pct": 30.8}, {"type": "没有代拍单号", "count": 2, "pct": 15.4}, {"type": "账号原因清除失败", "count": 2, "pct": 15.4}, {"type": "没有对应的订单", "count": 1, "pct": 7.7}, {"type": "数量不对", "count": 1, "pct": 7.7}, {"type": "多个机器对应多个代拍单", "count": 1, "pct": 7.7}, {"type": "销售机器属性异常", "count": 1, "pct": 7.7}, {"type": "少物品", "count": 1, "pct": 7.7}]}, "3413": {"oc_name": "沈阳", "per_person": [{"name": "杨曦", "total": 2, "types": {"账号原因清除失败": 2}}, {"name": "张希珍", "total": 4, "types": {"没有代拍单号": 2, "没有对应的订单": 2}}], "type_ratio": [{"type": "数量不对", "count": 11, "pct": 42.3}, {"type": "没有代拍单号", "count": 5, "pct": 19.2}, {"type": "销售机器属性异常", "count": 5, "pct": 19.2}, {"type": "没有对应的订单", "count": 3, "pct": 11.5}, {"type": "账号原因清除失败", "count": 2, "pct": 7.7}]}}};
 const EXC = window.EXC_DATA;   // 流转失误（按 仓→日期 分桶）
 const METRICS = D.meta.metrics;          // key -> {name,unit,color}
 const DAYS = D.days.slice().sort((a,b)=>a.date<b.date?-1:1);
@@ -1559,82 +1555,54 @@ function excSplitCalc(start, end){
   return out;
 }
 // ---------- 异常处理量模块（飞书外呼登记表；仅西安板块，随区间筛选联动） ----------
-const EXC_PIE_COLORS = {'无单号':'#ea4335','数量不对':'#fbbc04','三催':'#34a853','呆滞机器':'#a142f4','调拨':'#4285f4','单物不符':'#1aa3a3','拒收件':'#e67e22'};
+const EXC_NEWOC_PIE = ['#ea4335','#fbbc04','#34a853','#4285f4','#a142f4','#1aa3a3','#e67e22','#d63384','#0d9488','#f59e0b','#6366f1','#10b981','#ef4444','#8b5cf6','#14b8a6','#f97316','#3b82f6','#84cc16','#ec4899','#06b6d4','#a3e635','#fb7185','#22c55e'];
 function renderException(start, end){
-  const setVal=(id,v)=>{const e=document.getElementById(id); if(e) e.textContent=v;};
-  const hasXA = gsCitySet().indexOf('西安')>=0;
-  if(!hasXA){                      // 非西安（沈阳/成都/天津 或 总览不含西安）→ 清空
-    if(excPieChart) excPieChart.clear();
-    if(excLineChart) excLineChart.clear();
-    const dt=document.getElementById('excDetailTable'); if(dt) dt.innerHTML='';
-    setVal('gsExcQty','\u2014'); setVal('gsExcHours','\u2014');
+  const body = document.getElementById('excExceptionBody');
+  const snap = document.getElementById('excSnapDate');
+  if(!body) return;
+  const D = window.EXC_NEWOC;
+  if(snap) snap.textContent = D ? D.date : '—';
+  if(!D){ body.innerHTML='<div class="hint">暂无 newocs 异常处理数据。</div>'; return; }
+  const CITY_OC = {'西安':577,'天津':5,'成都':3,'沈阳':3413};
+  const OC_NAME = {'577':'西安','5':'天津','3':'成都','3413':'沈阳'};
+  let ocs = gsCitySet().map(c=>CITY_OC[c]).filter(Boolean);
+  ocs = Array.from(new Set(ocs));
+  if(!ocs.length){
+    body.innerHTML='<div class="hint">请选择具体仓（西安 / 天津 / 成都 / 沈阳）查看对应异常处理量。</div>';
     return;
   }
-  const reasons = EXC.reason_order;
-  const days = Object.keys(EXC.daily_reason).filter(d=>d>=start && d<=end).sort();
-  const rTot = {}; reasons.forEach(r=> rTot[r]=0);
-  let excQty=0;
-  days.forEach(d=>{ const o=EXC.daily_reason[d]||{}; reasons.forEach(r=>{ const v=o[r]||0; rTot[r]+=v; excQty+=v; }); });
-  setVal('gsExcQty', days.length? fmt(excQty)+' 单' : '\u2014');
-  setVal('gsExcHours', '\u2014');                       // 无标准工时定义
-  const rActive = reasons.filter(r=> rTot[r]>0);
-  // ① 异常原因占比（饼图，仅显示 >0 原因）
-  if(!excPieChart) excPieChart=echarts.init(document.getElementById('excPieChart'));
-  if(!days.length){ excPieChart.clear(); }
-  else{
-    const pieData = rActive.map(r=>({name:r, value:rTot[r], itemStyle:{color:EXC_PIE_COLORS[r]||'#999'}}));
-    excPieChart.setOption({
+  let html='';
+  ocs.forEach((oc,idx)=>{
+    const od = D.data[oc];
+    if(idx>0) html+='<div style="border-top:1px dashed #e6eaf0;margin:16px 0"></div>';
+    html+='<div class="sec-title">📊 '+ (OC_NAME[oc]||oc) +' 异常处理量（'+ D.date +'）</div>';
+    if(!od){ html+='<div class="hint">该仓暂无数据。</div>'; return; }
+    const grand = od.type_ratio.reduce((s,r)=>s+r.count,0);
+    html+='<table class="core-tbl"><tr><th class="nm">处理人</th><th>处理量(单)</th><th>异常类型分布（类型 × 条数）</th></tr>';
+    od.per_person.forEach(p=>{
+      const tks = Object.keys(p.types).length ? Object.entries(p.types).map(e=>e[0]+' '+e[1]).join('、') : '—';
+      html+='<tr><td class="nm">'+p.name+'</td><td class="upph-row" style="font-weight:600;text-align:center">'+p.total+'</td><td>'+tks+'</td></tr>';
+    });
+    html+='</table>';
+    const pieId='excPie_'+oc;
+    html+='<div class="sec-title" style="margin-top:14px">'+ (OC_NAME[oc]||oc) +' 异常类型占比（本仓共 '+ grand +' 单）</div>';
+    html+='<div class="chart" id="'+pieId+'" style="height:340px"></div>';
+  });
+  body.innerHTML = html;
+  ocs.forEach(oc=>{
+    const od = D.data[oc]; if(!od) return;
+    const el=document.getElementById('excPie_'+oc); if(!el) return;
+    const chart = echarts.getInstanceByDom(el) || echarts.init(el);
+    const pieData = od.type_ratio.map((r,ii)=>({name:r.type, value:r.count, itemStyle:{color:EXC_NEWOC_PIE[ii%EXC_NEWOC_PIE.length]}}));
+    chart.setOption({
       tooltip:{trigger:'item', formatter:function(p){return p.name+': '+fmt(p.value)+' 单 ('+p.percent+'%)';}},
       legend:{type:'scroll', bottom:0, textStyle:{fontSize:12}},
       series:[{type:'pie', radius:['38%','66%'], center:['50%','46%'], avoidLabelOverlap:true,
         data:pieData, label:{formatter:'{b}\n{d}%', fontSize:11}, labelLine:{length:10, length2:8}}]
     }, true);
-  }
-  // ② 各原因每日明细表
-  const dt=document.getElementById('excDetailTable');
-  if(dt){
-    if(!days.length){ dt.innerHTML='<div class="hint">所选区间内暂无异常处理数据。</div>'; }
-    else{
-      let h='<table class="core-tbl"><tr><th class="nm">日期</th>';
-      reasons.forEach(r=> h+='<th>'+r+'</th>'); h+='<th>合计</th></tr>';
-      days.forEach(d=>{
-        const o=EXC.daily_reason[d]||{}; let rowTot=0;
-        h+='<tr><td class="nm">'+d.slice(5)+'</td>';
-        reasons.forEach(r=>{ const v=o[r]||0; rowTot+=v; h+='<td'+(v?'':' style="color:#c4ccd8"')+'>'+v+'</td>'; });
-        h+='<td class="upph-row" style="font-weight:600">'+rowTot+'</td></tr>';
-      });
-      h+='<tr class="tot"><td class="nm">合计</td>';
-      reasons.forEach(r=> h+='<td>'+fmt(rTot[r])+'</td>');
-      h+='<td>'+fmt(excQty)+'</td></tr>';
-      h+='</table>';
-      dt.innerHTML=h;
-    }
-  }
-  // ③ 每日异常处理量分析（折线，按原因分系列 + 每日合计）
-  if(!excLineChart) excLineChart=echarts.init(document.getElementById('excLineChart'));
-  if(!days.length){ excLineChart.clear(); return; }
-  const xlab=days.map(G_LABEL);
-  const series = rActive.map(r=>({
-    name:r, type:'line', smooth:true, symbol:'circle', symbolSize:5, connectNulls:false,
-    itemStyle:{color:EXC_PIE_COLORS[r]||'#999'}, lineStyle:{width:2.2, color:EXC_PIE_COLORS[r]||'#999'},
-    data:days.map(d=> (EXC.daily_reason[d]&&EXC.daily_reason[d][r])||0)
-  }));
-  series.unshift({name:'每日合计', type:'line', smooth:true, symbol:'circle', symbolSize:6, connectNulls:false,
-    itemStyle:{color:'#2c5cc5'}, lineStyle:{width:3, color:'#2c5cc5'},
-    data:days.map(d=>{ let s=0; const o=EXC.daily_reason[d]||{}; reasons.forEach(r=> s+=(o[r]||0)); return s; })});
-  const useZoom = days.length>14;
-  const zoomStart = useZoom ? Math.round((1-30/days.length)*100) : 0;
-  const opt={ tooltip:{trigger:'axis', valueFormatter:function(v){return fmt(v)+' 单';}},
-    legend:{top:6, type:'scroll', textStyle:{fontSize:12}},
-    grid:{left:46, right:34, top:54, bottom:useZoom?74:40},
-    xAxis:{type:'category', data:xlab, boundaryGap:false, axisLabel:{hideOverlap:true}},
-    yAxis:{type:'value', name:'异常处理量(单)', nameTextStyle:{fontSize:11}, minInterval:1} };
-  if(useZoom) opt.dataZoom=[{type:'inside', start:zoomStart, end:100},{type:'slider', height:18, bottom:14, start:zoomStart, end:100, brushSelect:false}];
-  opt.series=series;
-  excLineChart.setOption(opt, true);
+  });
 }
-
-// ⑤ 每人工作量对比图：取退货 / 消息回复 / SW稽核 / 视频调取 / 异常邮件（均为区间累计，随筛选联动）
+// ⑤ 每人工作量对比图// ⑤ 每人工作量对比图：取退货 / 消息回复 / SW稽核 / 视频调取 / 异常邮件（均为区间累计，随筛选联动）
 function renderPerChart(start,end){
   const el=document.getElementById('perChart'); if(!el) return;
   if(!perChart) perChart=echarts.init(el);
