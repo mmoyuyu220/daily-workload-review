@@ -359,6 +359,7 @@ td.c-orange{color:#f2994a;font-weight:600}
   </div>
   <div id="regSection"></div>
 
+  <div id="cityCmpSection" style="display:none">
   <div class="sec-title" style="margin-top:16px">各仓处理量 / 处理时长 / 出勤时长对比</div>
   <div class="hint">四仓「处理量 / 处理时长 / 出勤时长」横向对比（始终对比全部四仓，不受单仓 tab / 仓联动筛选影响）。处理量 = 每人表「个人总处理量」按仓汇总；处理时长 = 各分项理论耗时合计按仓汇总；出勤时长 = 该仓人员区间实际打卡出勤工时之和；与「每人工作量」表口径完全一致，随上方「筛选条件」联动。其中「异常处理量(单)」「上下架量(条)」已从处理量总和中<b>单独拆出、按仓分列</b>（数量仍归属各仓个人：为该仓人员区间各自量级之和），避免与处理量混在一起看不清；下方第三张图进一步将这两项按仓并排对比。</div>
   <div id="cityCmpTable"></div>
@@ -367,6 +368,7 @@ td.c-orange{color:#f2994a;font-weight:600}
     <div class="chart" id="cityCmpHrsChart" style="height:320px;flex:1 1 420px;min-width:320px"></div>
   </div>
   <div class="chart" id="cityCmpExcShelfChart" style="height:320px;margin-top:8px"></div>
+  </div>
 
   <div class="m-video">
     <div class="sec-title">📅 各人出勤<span id="attRangeLbl" style="display:none"></span></div>
@@ -629,12 +631,17 @@ function renderGongshi(){
   //    隐藏「各理论耗时量对比」（取退货 / SW 均无源数据，对比无意义）
   const _hasXA = gsCitySet().indexOf('西安')>=0;
   const _sec=(id,show)=>{ const e=document.getElementById(id); if(e) e.style.display = show?'':'none'; };
+  const isXianTab = (!gsIsOverview && gsWhFilter==='西安');   // 西安单仓 tab：视频调取量即稽核量，二者合并展示
   _sec('secCore', !gsIsOverview);
   _sec('secGongshi', !gsIsOverview);
   _sec('secCmp', _hasXA);
   ['gsRowTq','gsRowSw','gsRowVid','gsRowMail','gsRowUpph'].forEach(id=>_sec(id,_hasXA));
   // 异常处理量（newocs 口径A）/ 上下架量 / 稽核量：四仓均有源数据，各仓核心指标统一展示
   ['gsRowMsg','gsRowTot','gsRowExc','gsRowShelf','gsRowJz'].forEach(id=>_sec(id,true));
+  _sec('gsRowJz', !isXianTab);   // 西安 tab：视频调取量即稽核量，移除冗余「稽核量」行（避免与「视频调取量（稽核量）」重复计数）
+  // 「视频调取量」行标签：西安 tab 改为「视频调取量（稽核量）」，其余保持原样
+  const vidLabelEl = document.querySelector('#gsRowVid .nm');
+  if(vidLabelEl){ vidLabelEl.innerHTML = isXianTab ? '视频调取量<span class="thu">（稽核量）</span>' : '视频调取<span class="thu">（含群视频·流转专项）</span>'; }
   _sec('secException', true);  // newocs 异常处理量：全四仓均展示（单仓显示该仓；总览四仓分别堆叠，与「流转失误」模块一致）
   _sec('secShelf', true);      // newocs 异常上下架处理量：全四仓均展示（同上）
   const rngDays=gsRangeDays();
@@ -718,12 +725,12 @@ function renderGongshi(){
   setTxt('gsJzQty',   (hasRng&&jzQ0>0)?fmt(jzQ0)+' 条':'—');
   setTxt('gsJzHours', (hasRng&&jzQ0>0)?fmt(+(jzQ0*JZ_RATE).toFixed(1))+' 分':'—');
   const vh = vq*6.05;  // 视频调取理论耗时 =（含群视频+流转专项）数量 × 工艺工时(6.05, 取每日明细Q列平均)
-  setTxt('gsTotQty', hasRng?fmt(tq+mq+sq+vq+mailq+excQ0+shelfQ0+jzQ0):'—');
+  setTxt('gsTotQty', hasRng?fmt(tq+mq+sq+vq+mailq+excQ0+shelfQ0+(isXianTab?0:jzQ0)):'—');
   setTxt('gsTqHours', hasRng?fmt(th)+' 分':'—');
   setTxt('gsMsgHours', hasRng?fmt(mh)+' 分':'—');
   setTxt('gsSwHours', hasRng?fmt(sh)+' 分':'—');
   setTxt('gsVidHours', hasRng?fmt(vh)+' 分':'—');
-  setTxt('gsTotHours', hasRng?fmt(+((th+mh+sh+mailq+vh+excQ0*EXC_RATE+shelfQ0*SHELF_RATE+jzQ0*JZ_RATE).toFixed(1)))+' 分':'—');
+  setTxt('gsTotHours', hasRng?fmt(+((th+mh+sh+mailq+vh+excQ0*EXC_RATE+shelfQ0*SHELF_RATE+(isXianTab?0:jzQ0*JZ_RATE)).toFixed(1)))+' 分':'—');
 
   // ② 工艺工时对照表
   renderGongshiTable();
@@ -1745,13 +1752,16 @@ function renderException(start, end){
     const od = agg[oc]; if(!od) return;
     const el=document.getElementById('excPie_'+oc); if(!el) return;
     const chart = echarts.getInstanceByDom(el) || echarts.init(el);
-    const ratioArr = Object.keys(od.ratio).map(t=>({type:t,count:od.ratio[t]})).sort((a,b)=>b.count-a.count);
-    const pieData = ratioArr.map((r,ii)=>({name:r.type, value:r.count, itemStyle:{color:EXC_NEWOC_PIE[ii%EXC_NEWOC_PIE.length]}}));
+    const ratioArr = Object.keys(od.ratio).map(t=>({type:t,count:od.ratio[t]})).sort((a,b)=>a.count-b.count);   // 升序：横向条形自下面上由小到大，最大类在最上
+    const total = ratioArr.reduce((s,r)=>s+r.count,0)||1;
     chart.setOption({
-      tooltip:{trigger:'item', formatter:function(p){return p.name+': '+fmt(p.value)+' 单 ('+p.percent+'%)';}},
-      legend:{type:'scroll', bottom:0, textStyle:{fontSize:12}},
-      series:[{type:'pie', radius:['38%','66%'], center:['50%','46%'], avoidLabelOverlap:true,
-        data:pieData, label:{formatter:'{b}\n{d}%', fontSize:11}, labelLine:{length:10, length2:8}}]
+      tooltip:{trigger:'axis', axisPointer:{type:'shadow'}, formatter:function(ps){ const p=ps[0]; return p.name+': '+fmt(p.value)+' 单 ('+(p.value/total*100).toFixed(1)+'%)'; }},
+      grid:{left:8, right:54, top:12, bottom:8, containLabel:true},
+      xAxis:{type:'value', name:'单', nameTextStyle:{fontSize:11}},
+      yAxis:{type:'category', data:ratioArr.map(r=>r.type), axisLabel:{fontSize:12}},
+      series:[{type:'bar', data:ratioArr.map(r=>r.count), barMaxWidth:24,
+        itemStyle:{color:'#f2994a', borderRadius:[0,4,4,0]},
+        label:{show:true, position:'right', formatter:p=>fmt(p.value), fontSize:11, color:'#555'}}]
     }, true);
   });
 }
@@ -1800,13 +1810,16 @@ function renderShelf(start, end){
     const od = agg[oc]; if(!od) return;
     const el=document.getElementById('shelfPie_'+oc); if(!el) return;
     const chart = echarts.getInstanceByDom(el) || echarts.init(el);
-    const ratioArr = Object.keys(od.ratio).map(t=>({type:t,count:od.ratio[t]})).sort((a,b)=>b.count-a.count);
-    const pieData = ratioArr.map((r,ii)=>({name:r.type, value:r.count, itemStyle:{color:EXC_NEWOC_PIE[ii%EXC_NEWOC_PIE.length]}}));
+    const ratioArr = Object.keys(od.ratio).map(t=>({type:t,count:od.ratio[t]})).sort((a,b)=>a.count-b.count);   // 升序：横向条形自下面上由小到大，最大类在最上
+    const total = ratioArr.reduce((s,r)=>s+r.count,0)||1;
     chart.setOption({
-      tooltip:{trigger:'item', formatter:function(p){return p.name+': '+fmt(p.value)+' 条 ('+p.percent+'%)';}},
-      legend:{type:'scroll', bottom:0, textStyle:{fontSize:12}},
-      series:[{type:'pie', radius:['38%','66%'], center:['50%','46%'], avoidLabelOverlap:true,
-        data:pieData, label:{formatter:'{b}\n{d}%', fontSize:11}, labelLine:{length:10, length2:8}}]
+      tooltip:{trigger:'axis', axisPointer:{type:'shadow'}, formatter:function(ps){ const p=ps[0]; return p.name+': '+fmt(p.value)+' 条 ('+(p.value/total*100).toFixed(1)+'%)'; }},
+      grid:{left:8, right:54, top:12, bottom:8, containLabel:true},
+      xAxis:{type:'value', name:'条', nameTextStyle:{fontSize:11}},
+      yAxis:{type:'category', data:ratioArr.map(r=>r.type), axisLabel:{fontSize:12}},
+      series:[{type:'bar', data:ratioArr.map(r=>r.count), barMaxWidth:24,
+        itemStyle:{color:'#9b51e0', borderRadius:[0,4,4,0]},
+        label:{show:true, position:'right', formatter:p=>fmt(p.value), fontSize:11, color:'#555'}}]
     }, true);
   });
 }
@@ -2084,6 +2097,8 @@ let ovMsgQtyChart=null, ovMsgPieChart=null, ovMsgPersonChart=null, ovMsgRateChar
 // ---------- 各仓处理量 / 处理时长 / 出勤时长对比（复用 renderGongshi 算出的 per-person rows 按仓聚合） ----------
 let cityCmpQtyChart=null, cityCmpHrsChart=null, cityCmpExcShelfChart=null;
 function renderCityCompare(){
+  const sec=document.getElementById('cityCmpSection');
+  if(sec && sec.style.display==='none') return;   // 仅总览(仓数据分析) tab 渲染该对比板块，单仓 tab 不渲染
   const wrap=document.getElementById('cityCmpTable');
   if(!wrap) return;
   const rows = (window.__GS_ROWS_ALL__)||[];
@@ -2818,6 +2833,8 @@ function gsHighlightWh(wh){
   document.querySelectorAll('#boardTabs .tab').forEach(b=>b.classList.toggle('active', b.dataset.wh===wh));
   const ov=document.getElementById('overviewSection');
   if(ov) ov.style.display = gsIsOverview ? '' : 'none';
+  const cmpSec=document.getElementById('cityCmpSection');   // 「各仓处理量/处理时长/出勤时长对比」仅总览(仓数据分析) tab 显示，单仓 tab 不显示
+  if(cmpSec) cmpSec.style.display = gsIsOverview ? '' : 'none';
   const ovField=document.getElementById('ovWhField');        // 顶部「筛选条件」面板里的仓联动筛选：仅总览 tab 可见
   if(ovField) ovField.style.display = gsIsOverview ? '' : 'none';
   if(!gsIsOverview && window.ovCloseCitySel) ovCloseCitySel();   // 离开总览时收起下拉面板
