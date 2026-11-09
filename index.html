@@ -305,7 +305,9 @@ td.c-blue,td.c-blue b{color:#2c5cc5}
     <tr id="gsRowSw"><td class="nm">SW稽核</td><td id="gsSwQty">—</td><td id="gsSwHours">—</td></tr>
     <tr id="gsRowVid"><td class="nm">视频调取<span class="thu">（含群视频·流转专项）</span></td><td id="gsVidQty">—</td><td id="gsVidHours">—</td></tr>
     <tr id="gsRowMail"><td class="nm">异常邮件跟进</td><td id="gsMailQty">—</td><td id="gsMailHours">—</td></tr>
-    <tr id="gsRowExc"><td class="nm">异常处理量<span class="thu">（外呼登记·完成=是）</span></td><td id="gsExcQty">—</td><td id="gsExcHours">—</td></tr>
+    <tr id="gsRowExc"><td class="nm">异常处理量</td><td id="gsExcQty">—</td><td id="gsExcHours">—</td></tr>
+    <tr id="gsRowShelf"><td class="nm">上下架量</td><td id="gsShelfQty">—</td><td id="gsShelfHours">—</td></tr>
+    <tr id="gsRowJz"><td class="nm">稽核量</td><td id="gsJzQty">—</td><td id="gsJzHours">—</td></tr>
     <tr class="tot" id="gsRowTot"><td class="nm">合计</td><td id="gsTotQty">—</td><td id="gsTotHours">—</td></tr>
     <tr class="upph-row" id="gsRowUpph"><td class="nm">日均UPPH<span class="thu">（区间综合·实际工时）</span></td><td id="gsAvgUpph">—</td><td>—</td></tr>
   </table>
@@ -619,15 +621,16 @@ function renderGongshi(){
   const start=gsRngStartPicker.value, end=gsRngEndPicker.value;
   // —— 板块显隐联动 ——
   // ① 总览 tab：隐藏「核心指标」「工艺工时」两板块（其余板块照常）
-  // ② 所选仓不含西安（沈阳 / 成都 / 天津 单仓，或总览只选这些仓）：核心指标仅留「消息回复 + 合计」、
+  // ② 所选仓不含西安（沈阳 / 成都 / 天津 单仓，或总览只选这些仓）：核心指标仅留「消息回复 + 异常处理量/上下架量/稽核量 + 合计」、
   //    隐藏「各理论耗时量对比」（取退货 / SW 均无源数据，对比无意义）
   const _hasXA = gsCitySet().indexOf('西安')>=0;
   const _sec=(id,show)=>{ const e=document.getElementById(id); if(e) e.style.display = show?'':'none'; };
   _sec('secCore', !gsIsOverview);
   _sec('secGongshi', !gsIsOverview);
   _sec('secCmp', _hasXA);
-  ['gsRowTq','gsRowSw','gsRowVid','gsRowMail','gsRowUpph','gsRowExc'].forEach(id=>_sec(id,_hasXA));
-  ['gsRowMsg','gsRowTot'].forEach(id=>_sec(id,true));
+  ['gsRowTq','gsRowSw','gsRowVid','gsRowMail','gsRowUpph'].forEach(id=>_sec(id,_hasXA));
+  // 异常处理量（newocs 口径A）/ 上下架量 / 稽核量：四仓均有源数据，各仓核心指标统一展示
+  ['gsRowMsg','gsRowTot','gsRowExc','gsRowShelf','gsRowJz'].forEach(id=>_sec(id,true));
   _sec('secException', true);  // newocs 异常处理量：全四仓均展示（单仓显示该仓；总览四仓分别堆叠，与「流转失误」模块一致）
   _sec('secShelf', true);      // newocs 异常上下架处理量：全四仓均展示（同上）
   const rngDays=gsRangeDays();
@@ -680,6 +683,21 @@ function renderGongshi(){
   tq=_cityPick('tq'); mq=_cityPick('mq'); sq=_cityPick('sq');
   th=_cityPick('th'); mh=_cityPick('mh'); sh=_cityPick('shh');
   if(!_ALLPICK && _AC.indexOf('西安')<0){ vq=0; mailq=0; vqP2=0; vqP3=0; vqP1=0; }   // 视频调取 / 异常邮件跟进 仅分摊至西安人员 → 所选仓不含西安则 0
+  // 异常处理量（newocs 口径A）/ 上下架量 / 稽核量 —— 核心指标行，口径与「每人工作量」表完全一致，按所选仓人员汇总
+  const EXC_RATE = 8.6;    // 异常处理 8.6 分/单（2026-09 四仓实测）
+  const SHELF_RATE = 2;    // 上下架 2 分/条（占位标准）
+  const JZ_RATE = 5;       // 稽核量 5 分/条（占位标准）
+  const _corePeople = _AC.reduce((a,c)=>a.concat(CITY_PEOPLE[c]||[]),[]);
+  const _coreExcAgg = _aggOcDays(_newocDatesOf(window.EXC_NEWOC), start, end);
+  const _coreShelfAgg = _aggOcDays(_newocDatesOf(window.EXC_SHELF), start, end);
+  const _coreJz = jzPerCalc(start, end);
+  let excQ0=0, shelfQ0=0, jzQ0=0;
+  _corePeople.forEach(p=>{
+    const oc=CITY_OC_MAP[WAREHOUSE[p]];
+    excQ0   += Math.round(((_coreExcAgg[oc]||{}).per||{})[p]||0);
+    shelfQ0 += Math.round(((_coreShelfAgg[oc]||{}).per||{})[p]||0);
+    jzQ0    += Math.round(_coreJz[p]||0);
+  });
   setTxt('gsRangeLbl2', (start&&end)?(start+' ~ '+end):'—');
   setTxt('gsTqQty', hasRng?fmt(tq)+' 件':'—');
   setTxt('gsMsgQty', hasRng?fmt(mq)+' 次':'—');
@@ -688,13 +706,20 @@ function renderGongshi(){
   if(vpEl){ vpEl.innerHTML = hasRng ? ('<b>'+fmt(vq)+' 个</b>') : '—'; }
   setTxt('gsMailQty', (hasRng&&mailq>0)?fmt(mailq)+' 条':'—');
   setTxt('gsMailHours', (hasRng&&mailq>0)?fmt(mailq*1)+' 分':'—');
+  // 异常处理量 / 上下架量 / 稽核量（核心指标行）
+  setTxt('gsExcQty',   (hasRng&&excQ0>0)?fmt(excQ0)+' 单':'—');
+  setTxt('gsExcHours', (hasRng&&excQ0>0)?fmt(+(excQ0*EXC_RATE).toFixed(1))+' 分':'—');
+  setTxt('gsShelfQty',   (hasRng&&shelfQ0>0)?fmt(shelfQ0)+' 条':'—');
+  setTxt('gsShelfHours', (hasRng&&shelfQ0>0)?fmt(+(shelfQ0*SHELF_RATE).toFixed(1))+' 分':'—');
+  setTxt('gsJzQty',   (hasRng&&jzQ0>0)?fmt(jzQ0)+' 条':'—');
+  setTxt('gsJzHours', (hasRng&&jzQ0>0)?fmt(+(jzQ0*JZ_RATE).toFixed(1))+' 分':'—');
   const vh = vq*6.05;  // 视频调取理论耗时 =（含群视频+流转专项）数量 × 工艺工时(6.05, 取每日明细Q列平均)
-  setTxt('gsTotQty', hasRng?fmt(tq+mq+sq+vq+mailq):'—');
+  setTxt('gsTotQty', hasRng?fmt(tq+mq+sq+vq+mailq+excQ0+shelfQ0+jzQ0):'—');
   setTxt('gsTqHours', hasRng?fmt(th)+' 分':'—');
   setTxt('gsMsgHours', hasRng?fmt(mh)+' 分':'—');
   setTxt('gsSwHours', hasRng?fmt(sh)+' 分':'—');
   setTxt('gsVidHours', hasRng?fmt(vh)+' 分':'—');
-  setTxt('gsTotHours', hasRng?fmt(+((th+mh+sh+mailq+vh).toFixed(1)))+' 分':'—');
+  setTxt('gsTotHours', hasRng?fmt(+((th+mh+sh+mailq+vh+excQ0*EXC_RATE+shelfQ0*SHELF_RATE+jzQ0*JZ_RATE).toFixed(1)))+' 分':'—');
 
   // ② 工艺工时对照表
   renderGongshiTable();
