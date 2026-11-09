@@ -57,6 +57,9 @@ td.nm,th.nm{text-align:left}
 /* 重点列（UPPH / 个人总处理量理论耗时）：标题用浅蓝强调（表头已为蓝底） */
 th.c-blue{color:#dbe8ff}
 td.c-blue,td.c-blue b{color:#2c5cc5}
+/* 重点列（异常处理量 / 上下架量）：标题与单元格用橙色强调，与图3配色一致 */
+th.c-orange{color:#ffd9b3}
+td.c-orange{color:#f2994a;font-weight:600}
 .foot{color:var(--sub);font-size:12px;margin-top:18px;text-align:center}
 .empty{color:var(--sub);padding:40px;text-align:center;background:#fafbfc;border:1px dashed #d7dce4;border-radius:10px}
 .cls{display:flex;gap:14px;margin:10px 0 4px;flex-wrap:wrap}
@@ -357,12 +360,13 @@ td.c-blue,td.c-blue b{color:#2c5cc5}
   <div id="regSection"></div>
 
   <div class="sec-title" style="margin-top:16px">各仓处理量 / 处理时长 / 出勤时长对比</div>
-  <div class="hint">四仓「处理量 / 处理时长 / 出勤时长」横向对比（始终对比全部四仓，不受单仓 tab / 仓联动筛选影响）。处理量 = 每人表「个人总处理量」按仓汇总；处理时长 = 各分项理论耗时合计按仓汇总；出勤时长 = 该仓人员区间实际打卡出勤工时之和；与「每人工作量」表口径完全一致，随上方「筛选条件」联动。</div>
+  <div class="hint">四仓「处理量 / 处理时长 / 出勤时长」横向对比（始终对比全部四仓，不受单仓 tab / 仓联动筛选影响）。处理量 = 每人表「个人总处理量」按仓汇总；处理时长 = 各分项理论耗时合计按仓汇总；出勤时长 = 该仓人员区间实际打卡出勤工时之和；与「每人工作量」表口径完全一致，随上方「筛选条件」联动。其中「异常处理量(单)」「上下架量(条)」已从处理量总和中<b>单独拆出、按仓分列</b>（数量仍归属各仓个人：为该仓人员区间各自量级之和），避免与处理量混在一起看不清；下方第三张图进一步将这两项按仓并排对比。</div>
   <div id="cityCmpTable"></div>
   <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">
     <div class="chart" id="cityCmpQtyChart" style="height:320px;flex:1 1 420px;min-width:320px"></div>
     <div class="chart" id="cityCmpHrsChart" style="height:320px;flex:1 1 420px;min-width:320px"></div>
   </div>
+  <div class="chart" id="cityCmpExcShelfChart" style="height:320px;margin-top:8px"></div>
 
   <div class="m-video">
     <div class="sec-title">📅 各人出勤<span id="attRangeLbl" style="display:none"></span></div>
@@ -2078,7 +2082,7 @@ let ovMsgQtyChart=null, ovMsgPieChart=null, ovMsgPersonChart=null, ovMsgRateChar
     ovRegDayChart=null, ovRegPieChart=null, ovRegTypeChart=null, ovRegProbChart=null,
     ovAttPersonChart=null, ovAttCityChart=null, ovAttUpphChart=null;
 // ---------- 各仓处理量 / 处理时长 / 出勤时长对比（复用 renderGongshi 算出的 per-person rows 按仓聚合） ----------
-let cityCmpQtyChart=null, cityCmpHrsChart=null;
+let cityCmpQtyChart=null, cityCmpHrsChart=null, cityCmpExcShelfChart=null;
 function renderCityCompare(){
   const wrap=document.getElementById('cityCmpTable');
   if(!wrap) return;
@@ -2088,20 +2092,22 @@ function renderCityCompare(){
   OV_CITIES.forEach(c=>{
     const rs = rows.filter(r=>WAREHOUSE[r.p]===c);
     if(!rs.length) return;
-    let proc=0, theo=0, att=0, people=new Set();
-    rs.forEach(r=>{ proc += (r.perTot||0); theo += (r.totTheo||0); att += (r.attHrs||0); people.add(r.p); });
-    agg[c] = {proc:proc, theo:theo, att:att, people:people.size};
+    let proc=0, theo=0, att=0, people=new Set(), exc=0, shelf=0;
+    rs.forEach(r=>{ proc += (r.perTot||0); theo += (r.totTheo||0); att += (r.attHrs||0); people.add(r.p); exc += (r.excQ||0); shelf += (r.shelfQ||0); });
+    agg[c] = {proc:proc, theo:theo, att:att, people:people.size, exc:exc, shelf:shelf};
   });
   const cities = Object.keys(agg);
   if(!cities.length){ wrap.innerHTML='<div class="hint">当前所选仓 / 区间内无处理量数据。</div>'; if(cityCmpQtyChart)cityCmpQtyChart.clear(); if(cityCmpHrsChart)cityCmpHrsChart.clear(); return; }
   // 表格：处理量 / 处理时长 / 出勤时长 + 人均处理量 + 人效(件/时)
-  let h='<table class="core-tbl"><tr><th class="nm">仓</th><th>处理量(件/次)</th><th>处理时长(分)</th><th>处理时长(小时)</th><th>出勤时长(H)</th><th>人均处理量(件/次·人)</th><th>人效(件/时)</th></tr>';
+  let h='<table class="core-tbl"><tr><th class="nm">仓</th><th>处理量(件/次)</th><th class="c-orange">异常处理量(单)</th><th class="c-orange">上下架量(条)</th><th>处理时长(分)</th><th>处理时长(小时)</th><th>出勤时长(H)</th><th>人均处理量(件/次·人)</th><th>人效(件/时)</th></tr>';
   cities.forEach(c=>{
     const a=agg[c];
     const perPer = a.people ? (a.proc/a.people) : 0;
     const eff = a.att>0 ? (a.proc/a.att) : 0;
     h+='<tr><td class="nm">'+c+'</td>'
       +'<td>'+fmt(a.proc)+'</td>'
+      +'<td class="c-orange">'+fmt(Math.round(a.exc))+'</td>'
+      +'<td class="c-orange">'+fmt(Math.round(a.shelf))+'</td>'
       +'<td>'+fmt(Math.round(a.theo))+'</td>'
       +'<td>'+ (a.theo/60).toFixed(1) +'</td>'
       +'<td>'+ a.att.toFixed(1) +'</td>'
@@ -2137,6 +2143,21 @@ function renderCityCompare(){
     ]
   }, true);
   cityCmpQtyChart.resize(); cityCmpHrsChart.resize();
+  // 图3：各仓异常处理量 vs 上下架量对比（从处理量总和中拆出，按仓分列，数量仍归属各仓个人）
+  if(!cityCmpExcShelfChart) cityCmpExcShelfChart=echarts.init(document.getElementById('cityCmpExcShelfChart'));
+  cityCmpExcShelfChart.setOption({
+    title:{text:'各仓异常处理量 vs 上下架量', left:'center', textStyle:{fontSize:14}},
+    tooltip:{trigger:'axis', valueFormatter:v=>fmt(v)+' 单/条'},
+    legend:{show:true, top:26, textStyle:{fontSize:12}},
+    grid:{left:64, right:24, top:64, bottom:36},
+    xAxis:{type:'category', data:cities, axisLabel:{fontSize:12}},
+    yAxis:{type:'value', name:'数量', nameTextStyle:{fontSize:11}},
+    series:[
+      {name:'异常处理量(单)', type:'bar', barWidth:'30%', data:cities.map(c=>({value:Math.round(agg[c].exc), itemStyle:{color:'#f2994a', borderRadius:[4,4,0,0]}})), label:{show:true,position:'top',fontSize:11,formatter:p=>fmt(p.value)}},
+      {name:'上下架量(条)', type:'bar', barWidth:'30%', data:cities.map(c=>({value:Math.round(agg[c].shelf), itemStyle:{color:'#9b51e0', borderRadius:[4,4,0,0]}})), label:{show:true,position:'top',fontSize:11,formatter:p=>fmt(p.value)}}
+    ]
+  }, true);
+  cityCmpExcShelfChart.resize();
 }
 // 总览「仓联动筛选」：当前所选仓（默认「不选」，由用户手动勾选；空数组 = 未选择任何仓 → 各区块空态并提示）
 let OV_SEL = OV_CITIES.slice();   // 默认：全部四仓（不再有"未选择仓"空态）
