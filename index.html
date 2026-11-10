@@ -46,16 +46,16 @@ select,input[type=date]{font-size:14px;padding:8px 10px;border:1px solid var(--l
 .metric-chk label{display:inline-flex;align-items:center;gap:6px;background:#f3f6fc;border:1px solid var(--line);border-radius:20px;padding:5px 12px;font-size:13px;cursor:pointer;user-select:none}
 .metric-chk input{accent-color:var(--blue)}
 .hint{font-size:12px;color:var(--sub);margin:4px 0 10px}
-/* 仓数据分析(总览) tab：2026-11-10 用户二次确认「灰色小字一个不留」——说明、单位、备注、区间提示全部隐藏；单仓 tab 不受影响 */
-body.ov-clean .hint,body.ov-clean .lbl,body.ov-clean .fp-note,body.ov-clean .fp-quick>span,
-body.ov-clean .ov-empty,body.ov-clean #regDateTip,body.ov-clean .foot,
-body.ov-clean .thu,body.ov-clean .gs-un,body.ov-clean .clsc .cl,body.ov-clean .grp .u{display:none!important}
-/* 控件标签 / 数据占位保留文字但改深色，不再以灰色小字出现 */
-body.ov-clean .fp-field label,body.ov-clean .ov-citybar .cb-lbl{color:var(--ink)!important;font-weight:700!important}
-body.ov-clean .tab:not(.active){color:var(--ink)!important}
-body.ov-clean td.na,body.ov-clean td.att-na,body.ov-clean .att-na,
-body.ov-clean #panel-gongshi #gsGongshiTable td.na,
-body.ov-clean td[style*="98a2b3"],body.ov-clean span[style*="9aa0a6"]{color:var(--ink)!important}
+/* 2026-11-10 用户：全站 6 个 tab（西安/沈阳/成都/天津/仓数据分析/工艺工时参考）灰色小字一个不留 */
+.hint,.lbl,.fp-note,.fp-quick>span,#regDateTip,.foot,
+.thu,.gs-un,.clsc .cl,.grp .u{display:none!important}
+/* 控件标签 / 卡片标签 / 仓标签 / 数据占位：文字保留但改深色，不再以灰色小字出现 */
+.fp-field label,.ov-citybar .cb-lbl,.gs-lb,.wh-tag,.tab:not(.active),.ring.flat{color:var(--ink)!important;font-weight:700!important}
+td.na,td.att-na,.att-na,#panel-gongshi #gsGongshiTable td.na,
+td[style*="98a2b3"],td[style*="#98a2b3"],span[style*="9aa0a6"],span[style*="#9aa0a6"]{color:var(--ink)!important}
+/* 「赵豫思 产假中」备注：红色标签（非灰字） */
+.zhao-note{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:8px;background:#fff1f0;border:1px solid #ffccc7;color:#c0392b!important;font-size:11px;font-weight:700;vertical-align:middle}
+.zhao-name{font-weight:700}
 /* 「工艺工时参考」tab：只保留工艺工时板块，其余板块一律隐藏（单文件看板内新建独立视图） */
 body.ref-mode #panel-gongshi > *:not(#secGongshi){display:none!important}
 body.ref-mode #secGongshi{margin-top:8px}
@@ -422,7 +422,7 @@ td.c-orange{color:#f2994a;font-weight:600}
     <div id="attSummary" class="vp-attstrip att-sum"></div>
     <div id="attMonthStat" class="vp-attstrip att-sum"></div>
     <div class="sec-title" style="margin-top:14px">出勤趋势分析</div>
-    <div class="hint">所选区间内每日出勤人数（左轴）与出勤率＝当日出勤人数 ÷ 所选仓应出勤人数（仓筛选=全部时为四仓合计 26 人，选西安 5 / 沈阳 3 / 成都 5 / 天津 13 人）（右轴）。</div>
+    <div class="hint">所选区间内每日出勤人数（左轴）与出勤率＝当日出勤人数 ÷ 所选仓应出勤人数（仓筛选=全部时为四仓合计 25 人，选西安 4 / 沈阳 3 / 成都 5 / 天津 13 人）（右轴）。</div>
     <div class="chart" id="attChart" style="height:300px"></div>
   </div>
   <!-- 2026-11-10 用户要求：仓数据分析(总览) tab 删除「每人工作量对比 / 趋势分析① / 趋势分析②」三块；
@@ -556,16 +556,23 @@ function gsCityLabel(){ return gsCityAll() ? '所选仓' : gsCitySet().join('、
 //    以保证 UPPH 分母与出勤统计在缺数据期间不突兀归零；有明确「休息 / 婚假」的仍按原值排除；
 //    2026-10-20 之前缺数据的早期日期（如 7 月无考勤源）维持原口径（不计入），避免历史口径被放大。
 const ATT_DEFAULT_FROM = '2026-10-20';
-const ZHAO_LEAVE_FROM = '2026-10-26';   // 赵豫思 自该日起默认「休假中」（用户 2026-10-26 指示；不说恢复则一直生效，无视考勤数据）
+// 2026-11-10 用户：赵豫思「产假中」→ 西安暂时按 4 人计算，全站所有人数分母 / 出勤 / 分摊 / 人均均不含她；
+// 表格保留她的行，数值一律显示「—」并标注「产假中」。恢复方法：把 ZHAO_EXCLUDED 改回 false 即可（业务数据一行未动）。
+const ZHAO_EXCLUDED = true;
+const ZHAO_NAME = '赵豫思';
+const ZHAO_NOTE = '产假中';
+const _noZhao = a => ZHAO_EXCLUDED ? (a||[]).filter(x=>(typeof x==='string'?x:(x&&x.p))!==ZHAO_NAME) : (a||[]);
+const _isZhao = p => ZHAO_EXCLUDED && p===ZHAO_NAME;
+const ZHAO_LEAVE_FROM = '0000-00-00';   // 保留常量（原 2026-10-26 休假起点）；产假中改为全日期由 _isZhao 判定
 function attEffStatus(d, p){               // 有效出勤状态（含缺数据默认）
-  if(p==='赵豫思' && d>=ZHAO_LEAVE_FROM) return '休假中';   // 用户指定：自 2026-10-26 起默认休假（覆盖考勤数据，不参与出勤/工时统计）
+  if(_isZhao(p)) return ZHAO_NOTE;       // 产假中：全日期生效，不参与出勤 / 工时统计
   const s = (((ATT&&ATT.attendance&&ATT.attendance[d])||{})[p]||'');
   if(s==='出勤'||s==='休息'||s==='婚假') return s;
   if(d >= ATT_DEFAULT_FROM) return '出勤'; // 缺数据 → 默认出勤
   return '';
 }
 function attEffDur(d, p){                   // 有效出勤时长（含缺数据默认）
-  if(p==='赵豫思' && d>=ZHAO_LEAVE_FROM) return 0;   // 同上：休假不计出勤时长
+  if(_isZhao(p)) return 0;   // 产假中：不计出勤时长
   const v = (((ATT&&ATT.attDur||{})[d]||{})[p]);
   if(typeof v==='number' && v>0) return v;
   if(d >= ATT_DEFAULT_FROM) return 8;       // 缺数据 → 默认 8H
@@ -574,7 +581,7 @@ function attEffDur(d, p){                   // 有效出勤时长（含缺数据
 // 分摊用有效出勤判定：原始考勤优先；自 2026-10-20 起考勤明细缺失的日期按默认出勤（与 attEffStatus 口径一致）；
 // 赵豫思 自 2026-10-26 起强制休假不参与分摊。用于 异常邮件跟进 / 异常处理量 的目标人出勤判定。
 function attRawEff(d, p){
-  if(p==='赵豫思' && d>=ZHAO_LEAVE_FROM) return false;
+  if(_isZhao(p)) return false;   // 产假中：不参与任何分摊
   const s=(((ATT&&ATT.attendance&&ATT.attendance[d])||{})[p])||'';
   if(s==='出勤') return true;
   if(!s && d>=ATT_DEFAULT_FROM) return true;   // 缺数据 → 默认出勤
@@ -710,7 +717,7 @@ function renderGongshi(){
   // 仓联动（核心指标随「仓筛选」折算）：全部=原值；指定仓=该仓按人明细合计（直接算，不靠 全部−其它）
   const _AC = gsCitySet();                       // 有效仓集合（总览 = 仓联动筛选所选仓）
   const _ALLPICK = gsCityAll();
-  const selList = _ALLPICK ? null : _AC.reduce((a,c)=>a.concat(CITY_PEOPLE[c]||[]), []);
+  const selList = _ALLPICK ? null : _noZhao(_AC.reduce((a,c)=>a.concat(CITY_PEOPLE[c]||[]), []));
   let sel={tq:0,mq:0,sq:0,th:0,mh:0,shh:0};
   if(selList){ rngDays.forEach(d=>{
     const g=G.dates[d], s=S.dates[d];
@@ -731,7 +738,7 @@ function renderGongshi(){
   const EXC_RATE = 2;      // 异常处理 2 分/单（2026-09 四仓 12,441 条时间差中位数，2026-11-10 用户确认）
   const SHELF_RATE = 0.5;  // 上下架 0.5 分/条（用户 2026-11-10 确认）
   const JZ_RATE = 5;       // 稽核量 5 分/条（占位标准）
-  const _corePeople = _AC.reduce((a,c)=>a.concat(CITY_PEOPLE[c]||[]),[]);
+  const _corePeople = _noZhao(_AC.reduce((a,c)=>a.concat(CITY_PEOPLE[c]||[]),[]));
   const _coreExcAgg = _aggOcDays(_newocDatesOf(window.EXC_NEWOC), start, end);
   const _coreShelfAgg = _aggOcDays(_newocDatesOf(window.EXC_SHELF), start, end);
   const _coreJz = jzPerCalc(start, end);
@@ -795,6 +802,7 @@ function renderGongshi(){
   const jzPer = jzPerCalc(start, end);
   function buildPersonRows(people){
     return people.map(p=>{
+    if(_isZhao(p)) return {p, a:0,b:0,c:0,mailQ:0,vid:0,excQ:0,shelfQ:0,jzQ:0,gdQ:0,excH:0,msgTheo:0,swH2:0,mailH:0,tuihuoTheo:0,vidTheo:0,shelfTheo:0,jzTheo:0,totTheo:0,perTot:0,attDays:0,attHrs:0,upph:0};
     let a=0,b=0,c=0,swH2=0;
     rngDays.forEach(d=>{ const g=G.dates[d], s=S.dates[d];
       a += (g&&g.tuihuo_per&&g.tuihuo_per[p])||0;
@@ -897,7 +905,7 @@ function renderGongshi(){
   setTxt('gsDaysCnt', hasRng?rngDays.length:'—');
 
   // ④.1 顶部汇总卡片（每日处理量 / 日均UPPH / 理论耗时(区间合计) / 日均出勤人数）—— 随筛选联动
-  const ATT_PEOPLE = ((ATT&&ATT.people)||[]).filter(p=> gsCityHas(p));
+  const ATT_PEOPLE = ((ATT&&ATT.people)||[]).filter(p=> gsCityHas(p) && !_isZhao(p));
   let attManDays = 0;   // 区间出勤人日 = 各日出勤人数(<== 与出勤趋势图同源：ATT.people 中当日='出勤'，含缺数据默认出勤)之和
   rngDays.forEach(d=>{ attManDays += ATT_PEOPLE.filter(p=>attEffStatus(d,p)==='出勤').length; });
   setTxt('gsSumQtyPerDay', hasRng?fmt(+(cumQ/nDays).toFixed(1)):'—');
@@ -1006,6 +1014,7 @@ function renderGongshi(){
   renderRegSection();     // 流转失误（按所选仓 / 总览四仓对比）
   renderCityCompare();    // 各仓处理量/处理时长/出勤时长对比（复用 window.__GS_ROWS_ALL__）
   renderOverview();       // 总看板对比分析（仅总览可见）
+  zhaoMask();            // 赵豫思「产假中」：留行、数据横杠、姓名/表头备注
 }
 
 // ---------- 视频调取 & 考勤 ----------
@@ -1551,10 +1560,11 @@ function renderAttRange(start,end){
   } else {
     days=daysAll;
   }
-  const P=ATT.people.filter(p=> gsCityHas(p));
+  const P=ATT.people.filter(p=> gsCityHas(p));      // 表格名单（保留赵豫思行，数值显示「—」）
+  const Pc=_noZhao(P);                              // 有效在册人数（西安 4 人）：所有分母 / 出勤统计用
   // 汇总始终按所选区间全量统计，避免被默认折叠误导
   const sum={}; P.forEach(p=>sum[p]={on:0,off:0});
-  daysAll.forEach(d=>{ P.forEach(p=>{ const s=attEffStatus(d,p);
+  daysAll.forEach(d=>{ Pc.forEach(p=>{ const s=attEffStatus(d,p);
     if(s==='出勤') sum[p].on++; else if(s==='休息'||s==='婚假') sum[p].off++; }); });
   let h='<table><tr><th>日期</th><th>周</th>'+P.map(p=>'<th>'+p+'<br><span class="wh-tag">'+WAREHOUSE[p]+'</span></th>').join('')+'</tr>';
   days.forEach(d=>{
@@ -1593,23 +1603,23 @@ function renderAttRange(start,end){
         +'<td style="color:#d1342f;font-weight:600">'+f+'</td><td style="color:#98a2b3">'+oth+'</td>'
         +'<td>'+(tot?(o/tot*100).toFixed(1)+'%':'—')+'</td></tr>';
     });
-    t+='<tr style="background:#eaf0fa"><td class="nm"><b>合计</b></td><td>'+P.length+' 人</td><td><b>'+onA.reduce((x,y)=>x+y,0)+'</b></td>'
+    t+='<tr style="background:#eaf0fa"><td class="nm"><b>合计</b></td><td>'+Pc.length+' 人</td><td><b>'+onA.reduce((x,y)=>x+y,0)+'</b></td>'
       +'<td><b>'+durA.reduce((x,y)=>x+y,0).toFixed(1)+'</b></td>'
       +'<td><b>'+offA.reduce((x,y)=>x+y,0)+'</b></td><td><b>'+othA.reduce((x,y)=>x+y,0)+'</b></td><td>'
-      +(tot?((onA.reduce((x,y)=>x+y,0)/(P.length*tot))*100).toFixed(1)+'%':'—')+'</td></tr>';
+      +(tot?((onA.reduce((x,y)=>x+y,0)/(Pc.length*tot))*100).toFixed(1)+'%':'—')+'</td></tr>';
     t+='</table>';
     t+='<div class="hint" style="margin-top:6px">出勤 / 休息天数按所选区间全量统计（不受上方明细默认折叠影响）；出勤率 = 出勤天数 ÷ 区间天数；「其它 / 未登记」= 非出勤非休息的日期（含暂无排班源数据的成都 / 天津）。</div>';
     // 文字分析（替代原堆叠图，按仓筛选与区间联动）
     const sOn=onA.reduce((x,y)=>x+y,0), sOff=offA.reduce((x,y)=>x+y,0), sOth=othA.reduce((x,y)=>x+y,0);
-    const allRate=(P.length&&tot)?(sOn/(P.length*tot)*100):0;
-    const full=P.filter((p,i)=>onA[i]===tot), zero=P.filter((p,i)=>onA[i]===0), noSrc=P.filter((p,i)=>othA[i]===tot);
+    const allRate=(Pc.length&&tot)?(sOn/(Pc.length*tot)*100):0;
+    const full=P.filter((p,i)=>!_isZhao(p)&&onA[i]===tot), zero=P.filter((p,i)=>!_isZhao(p)&&onA[i]===0), noSrc=P.filter((p,i)=>!_isZhao(p)&&othA[i]===tot);
     const restTop=P.map((p,i)=>[p,offA[i]]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,3);
     const rateTop=P.map((p,i)=>[p,(tot?onA[i]/tot*100:0)]).sort((a,b)=>b[1]-a[1]);
     const _nm=a=>a.length?(a.slice(0,8).join('、')+(a.length>8?(' 等 '+a.length+' 人'):'')):'无';
     t+='<div class="ov-text" style="width:100%;flex:0 0 100%;margin-top:10px"><span class="ov-h">出勤结构分析</span>'
       +'<ul style="margin:6px 0 0 18px;padding:0">'
-      +'<li>区间 <b>'+tot+'</b> 天 × 在册 <b>'+P.length+'</b> 人 = 应出勤 <b>'+(P.length*tot)+'</b> 人日，实际出勤 <b>'+sOn+'</b> 人日、休息 <b>'+sOff+'</b> 人日、其它 / 未登记 <b>'+sOth+'</b> 人日，<b>整体出勤率 '+allRate.toFixed(1)+'%</b>。</li>'
-      +'<li>全勤（区间内无休息 / 未登记）：<b>'+_nm(full)+'</b>'+(full.length?('（'+full.length+' 人，占 '+((full.length/P.length)*100).toFixed(1)+'%）'):'')+'。</li>'
+      +'<li>区间 <b>'+tot+'</b> 天 × 在册 <b>'+Pc.length+'</b> 人 = 应出勤 <b>'+(Pc.length*tot)+'</b> 人日，实际出勤 <b>'+sOn+'</b> 人日、休息 <b>'+sOff+'</b> 人日、其它 / 未登记 <b>'+sOth+'</b> 人日，<b>整体出勤率 '+allRate.toFixed(1)+'%</b>。</li>'
+      +'<li>全勤（区间内无休息 / 未登记）：<b>'+_nm(full)+'</b>'+(full.length?('（'+full.length+' 人，占 '+((full.length/Pc.length)*100).toFixed(1)+'%）'):'')+'。</li>'
       +(restTop.length?('<li>休息天数最多：'+restTop.map(x=>'<b>'+x[0]+' '+x[1]+' 天</b>').join('、')+'，需关注排班均衡与人力缺口。</li>'):'<li>区间内无人员休息记录。</li>')
       +(zero.length?('<li>区间内 <b>零出勤</b>：'+_nm(zero)+'，请核实是否为长期休假 / 离职未减员或排班源缺失。</li>'):'')
       +(noSrc.length?('<li>暂无排班源数据（整区间未登记）：<b>'+_nm(noSrc)+'</b>，待补源后自动并入统计。</li>'):'')
@@ -1658,7 +1668,7 @@ function renderAttMonth(){
   const y = parseInt(dm.slice(0,4),10), m = parseInt(dm.slice(5,7),10);
   const should = computeShouldAttend(y, m);
   const shouldH = should * 8;
-  const P = ATT.people.filter(p=> gsCityHas(p));
+  const P = _noZhao(ATT.people.filter(p=> gsCityHas(p)));
   const actual = {}; const monthDur = {}; P.forEach(p=>{ actual[p]=0; monthDur[p]=0; });
   const attKeys=new Set(Object.keys(ATT.attendance));
   const monthDays=Array.from(new Set([
@@ -1686,7 +1696,7 @@ function renderAttChart(start,end){
   const el=document.getElementById('attChart'); if(!el) return;
   if(!attChart) attChart=echarts.init(el);
   const days=Object.keys(ATT.attendance).filter(d=>d>=start&&d<=end).sort();
-  const P=ATT.people.filter(p=> gsCityHas(p));
+  const P=_noZhao(ATT.people.filter(p=> gsCityHas(p)));
   if(!days.length){ attChart.clear(); return; }
   const onCnt=[], rate=[];
   days.forEach(d=>{
@@ -2214,7 +2224,7 @@ function renderCityCompare(){
     const rs = rows.filter(r=>WAREHOUSE[r.p]===c);
     if(!rs.length) return;
     let exc=0, shelf=0, jz=0, att=0, people=new Set();
-    rs.forEach(r=>{ exc+=(r.excQ||0); shelf+=(r.shelfQ||0); jz+=(r.jzQ||0); att+=(r.attHrs||0); people.add(r.p); });
+    rs.forEach(r=>{ exc+=(r.excQ||0); shelf+=(r.shelfQ||0); jz+=(r.jzQ||0); att+=(r.attHrs||0); if(!_isZhao(r.p)) people.add(r.p); });
     agg[c]={exc:exc, shelf:shelf, jz:jz, att:att, people:people.size};
   });
   const cities = Object.keys(agg);
@@ -2343,7 +2353,7 @@ function ovMsgAgg(start,end,sel){
   sel = (sel&&sel.length)?sel:[];            // 未选任何仓 → 空集合（各区块走空态，不再回落四仓全量）
   const days=GS_DATES.filter(d=>d>=start&&d<=end);
   const per={}, city={};
-  sel.forEach(c=>city[c]={qty:0,hours:0,avgW:0,avgN:0,active:0,rate:MSG_RATES[c]||MSG_RATE,people:(CITY_PEOPLE[c]||[]).length});
+  sel.forEach(c=>city[c]={qty:0,hours:0,avgW:0,avgN:0,active:0,rate:MSG_RATES[c]||MSG_RATE,people:_noZhao(CITY_PEOPLE[c]||[]).length});
   days.forEach(d=>{ const g=G.dates[d]; if(!g||!g.msg_reply_per) return;
     for(const p in g.msg_reply_per){
       const o=g.msg_reply_per[p]||{}; const q=o.replied||0; if(!q) continue;
@@ -2358,7 +2368,7 @@ function ovMsgAgg(start,end,sel){
   rows.forEach(t=>{ t.rate=MSG_RATES[t.city]||MSG_RATE; t.hours=t.qty*t.rate/60; t.avg=t.wcnt?t.wsum/t.wcnt:null; });
   sel.forEach(c=>{ const cc=city[c];
     cc.hours=cc.qty*cc.rate/60; cc.avg=cc.avgN?cc.avgW/cc.avgN:null;
-    cc.active=rows.filter(r=>r.city===c&&r.qty>0).length;
+    cc.active=rows.filter(r=>r.city===c&&r.qty>0&&!_isZhao(r.p)).length;
     cc.per=cc.people?cc.qty/cc.people:0;
   });
   const tot=rows.reduce((a,r)=>a+r.qty,0), totH=rows.reduce((a,r)=>a+r.hours,0);
@@ -2448,7 +2458,7 @@ function renderOverview(){
         +'<td>'+(cc.avg!=null?ovP1(cc.avg):dash)+'</td><td>'+cc.rate+'</td><td><b>'+ovP1(cc.hours)+'</b></td>'
         +'<td>100%</td><td><b>'+ovP1(cc.pctAll)+'%</b></td>'+(hasRegCol?('<td><b>'+fmt(R.city[c].cnt)+'</b></td>'):'')+'</tr>';
     });
-    h+='<tr style="background:#eaf0fa"><td class="nm"><b>'+OV_TOT+'</b></td><td class="nm">'+M.rows.length+' 人 / 有回复 '+M.rows.filter(r=>r.qty>0).length+' 人</td><td></td>'
+    h+='<tr style="background:#eaf0fa"><td class="nm"><b>'+OV_TOT+'</b></td><td class="nm">'+_noZhao(M.rows).length+' 人 / 有回复 '+_noZhao(M.rows).filter(r=>r.qty>0).length+' 人</td><td></td>'
       +'<td><b>'+fmt(M.tot)+'</b></td><td>'+M.days.length+'</td><td><b>'+ovP1(M.tot/(M.days.length||1))+'</b></td>'
       +'<td>'+(function(){ const w=M.city; let s=0,n=0; SEL.forEach(c=>{ s+=w[c].avgW; n+=w[c].avgN; }); return n?ovP1(s/n):dash; })()+'</td>'
       +'<td>—</td><td><b>'+ovP1(M.totH)+'</b></td><td>—</td><td>100%</td>'+(hasRegCol?('<td><b>'+fmt(R.tot)+'</b></td>'):'')+'</tr>';
@@ -2468,7 +2478,7 @@ function renderOverview(){
         +'<td><b>'+fmt(k.qty)+'</b></td><td><b>'+ovP1(k.pctAll)+'%</b></td><td>'+ovP1(k.per)+'</td><td>'+ovP1(k.qty/(M.days.length||1))+'</td>'
         +'<td>'+k.rate+'</td><td><b>'+ovP1(k.hours)+'</b></td><td>'+(k.avg!=null?ovP1(k.avg):'—')+'</td></tr>';
     });
-    h+='<tr style="background:#eaf0fa"><td class="nm"><b>合计</b></td><td>'+M.rows.length+'</td><td>'+M.rows.filter(r=>r.qty>0).length+'</td><td><b>'+fmt(M.tot)+'</b></td><td>100%</td><td>'+ovP1(M.tot/26)+'</td><td>'+ovP1(M.tot/(M.days.length||1))+'</td><td>—</td><td><b>'+ovP1(M.totH)+'</b></td><td>—</td></tr></table>';
+    h+='<tr style="background:#eaf0fa"><td class="nm"><b>合计</b></td><td>'+_noZhao(M.rows).length+'</td><td>'+_noZhao(M.rows).filter(r=>r.qty>0).length+'</td><td><b>'+fmt(M.tot)+'</b></td><td>100%</td><td>'+ovP1(M.tot/(_noZhao(M.rows).length||1))+'</td><td>'+ovP1(M.tot/(M.days.length||1))+'</td><td>—</td><td><b>'+ovP1(M.totH)+'</b></td><td>—</td></tr></table>';
     document.getElementById('ovMsgSummary').innerHTML=h;
     // 图 A：回复量 + 理论耗时（双轴）
     if(!ovMsgQtyChart) ovMsgQtyChart=echarts.init(document.getElementById('ovMsgQtyChart'));
@@ -2500,7 +2510,7 @@ function renderOverview(){
     if(!ovMsgPersonChart) ovMsgPersonChart=echarts.init(document.getElementById('ovMsgPersonChart'));
     if(noMsg){ ovMsgPersonChart.clear(); }
     else{
-      const people=M.people.filter(r=>r.qty>0);
+      const people=M.people.filter(r=>r.qty>0 && !_isZhao(r.p));
       const ys=people.map(r=>r.p+' · '+r.city);
       ovMsgPersonChart.setOption({
         tooltip:{trigger:'axis', axisPointer:{type:'shadow'}, formatter:p=>p[0].name+'<br/>回复 '+fmt(p[0].value)+' 次'},
@@ -2533,8 +2543,8 @@ function renderOverview(){
     if(noMsg){ t.push('<span class="ov-h">数据提示</span>'+(SEL.length?('当前区间（'+mStart+' ~ '+mEnd+'）'+OV_TOT2+'均无消息回复数据。'):'当前<b>未选择任何仓</b> —— 请在上方「仓联动筛选」中选择仓（可多选）后查看消息回复分析。')); }
     else{
       const top=rank[0], last=rank[rank.length-1];
-      const top3p=M.people.slice(0,3);
-      const zero=M.rows.filter(r=>r.qty===0).map(r=>r.p);
+      const top3p=M.people.filter(r=>!_isZhao(r.p)).slice(0,3);
+      const zero=_noZhao(M.rows).filter(r=>r.qty===0).map(r=>r.p);
       const rateMax=SEL.slice().sort((a,b)=>M.city[b].rate-M.city[a].rate)[0];
       const rateMin=SEL.slice().sort((a,b)=>M.city[a].rate-M.city[b].rate)[0];
       const avgGap=(M.city[rateMax].rate-M.city[rateMin].rate)*1000/60;
@@ -2550,7 +2560,7 @@ function renderOverview(){
         +'<li>人均回复：'+rank.map(c=>'<span class="tag">'+c+' '+ovP1(M.city[c].per)+' 次/人</span>').join('')
         +'；'+SEL.slice().sort((a,b)=>M.city[b].per-M.city[a].per)[0]+' 人均负荷最高，'
         +SEL.slice().sort((a,b)=>M.city[a].per-M.city[b].per)[0]+' 最低，存在明显的负荷不均衡。</li>'
-        +'<li>在册 '+M.rows.length+' 人中实际产生回复 <b>'+M.rows.filter(r=>r.qty>0).length+'</b> 人'+(zero.length?('，区间内 0 回复：'+zero.join('、')+'（建议核实是否离职 / 转岗或群聊未纳入统计）'):'')+'。</li>'
+        +'<li>在册 '+_noZhao(M.rows).length+' 人中实际产生回复 <b>'+_noZhao(M.rows).filter(r=>r.qty>0).length+'</b> 人'+(zero.length?('，区间内 0 回复：'+zero.join('、')+'（建议核实是否离职 / 转岗或群聊未纳入统计）'):'')+'。</li>'
         +'<li>标准工时（分/次）最高 '+rateMax+' '+M.city[rateMax].rate+' 分，最低 '+rateMin+' '+M.city[rateMin].rate+' 分；同样 1000 次回复，'+rateMax+' 比 '+rateMin+' 多耗时约 <b>'+ovP1(avgGap)+' 小时</b>，优化响应时效对 '+rateMax+' 的工时释放最直接。</li>'
         +'</ul>');
       t.push('<span class="ov-h">③ 人员集中度</span>');
@@ -2686,7 +2696,7 @@ function renderOverview(){
       if(summ) summ.innerHTML='<div class="ov-empty">当前<b>未选择任何仓</b>：请在上方「仓联动筛选」中选择仓（可多选）后查看四仓人均出勤时长对比。</div>';
       _clr(); txtEl.innerHTML=''; return;
     }
-    const people=(ATT.people||[]).filter(p=>SEL.indexOf(WAREHOUSE[p])>=0);
+    const people=_noZhao((ATT.people||[]).filter(p=>SEL.indexOf(WAREHOUSE[p])>=0));
     // 每人处理量（与各仓「每人工作量」同口径）= 取退货 + 消息回复 + SW稽核 + 视频调取 + 异常邮件跟进 + 异常处理量
     const volPer={}; people.forEach(p=>volPer[p]=0);
     rngD.forEach(d=>{
@@ -3054,6 +3064,49 @@ if(GS_DATES.length || (ATT&&ATT.attendance)){ renderGongshi(); }
 window.addEventListener('resize',()=>{if(trendChart)trendChart.resize();if(regionChart)regionChart.resize();if(gsCmpChart)gsCmpChart.resize();if(gsQtyChart)gsQtyChart.resize();if(gsHoursChart)gsHoursChart.resize();if(attChart)attChart.resize();if(perChart)perChart.resize();if(excPieChart)excPieChart.resize();if(excLineChart)excLineChart.resize();
   [ovMsgQtyChart,ovMsgPieChart,ovMsgPersonChart,ovMsgRateChart,ovRegDayChart,ovRegPieChart,ovRegTypeChart,ovRegProbChart,ovAttPersonChart,ovAttCityChart,ovAttUpphChart].forEach(c=>{ if(c) c.resize(); });
 });
+
+// ===== 2026-11-10 用户：赵豫思「产假中」显示层统一处理 =====
+// 表格保留她的行/列，所有数值单元格显示「—」，姓名或表头标注「产假中」。
+// 幂等：处理过的节点打 data-zm="1"，避免 MutationObserver 重复触发。
+function zhaoMask(){
+  if(typeof ZHAO_EXCLUDED==='undefined' || !ZHAO_EXCLUDED) return;
+  const N=ZHAO_NAME, NOTE=ZHAO_NOTE;
+  // 按「列」排人名的表（各人出勤明细：表头是姓名，单元格状态本身已是「—」）
+  document.querySelectorAll('th').forEach(th=>{
+    if(th.getAttribute('data-zm')==='1') return;
+    const t=(th.textContent||'').trim();
+    if(t.indexOf(N)!==0) return;
+    th.innerHTML=th.innerHTML.replace(N, N+'<span class="zhao-note">'+NOTE+'</span>');
+    th.setAttribute('data-zm','1');
+  });
+  // 按「行」排人名的表（每人工作量 / 理论耗时 / 出勤汇总 / 总览按人汇总 …）
+  document.querySelectorAll('table tr').forEach(tr=>{
+    const tds=tr.querySelectorAll('td');
+    if(tds.length<3) return;
+    const first=(tds[0].textContent||'').trim();
+    if(first.indexOf(N)!==0) return;
+    if(tds[0].getAttribute('data-zm')!=='1'){
+      tds[0].innerHTML='<span class="zhao-name">'+N+'</span><span class="zhao-note">'+NOTE+'</span>';
+      tds[0].setAttribute('data-zm','1');
+    }
+    for(let i=2;i<tds.length;i++){
+      const c=tds[i];
+      if(c.getAttribute('data-zm')==='1') continue;
+      c.textContent='\u2014';
+      c.setAttribute('data-zm','1');
+    }
+  });
+}
+(function(){
+  let raf=0;
+  const mo=new MutationObserver(()=>{
+    if(raf) return;
+    raf=requestAnimationFrame(()=>{ raf=0; try{ zhaoMask(); }catch(e){} });
+  });
+  mo.observe(document.body,{childList:true,subtree:true});
+  setTimeout(zhaoMask, 400);
+  setTimeout(zhaoMask, 1600);
+})();
 </script>
 </body>
 </html>
