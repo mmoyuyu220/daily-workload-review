@@ -361,6 +361,18 @@ td.c-orange{color:#f2994a;font-weight:600}
     <div id="ovRegText" class="ov-text"></div>
   </div>
 
+  <!-- 四仓人均出勤时长对比分析（2026-11-10 用户要求：挪到「仓稽核量」板块正下方，仅总览显示） -->
+  <div id="ovAttSection" style="display:none">
+    <div class="sec-title">四仓人均出勤时长对比分析</div>
+    <div id="ovAttSummary"></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <div class="chart" id="ovAttCityChart" style="height:380px;flex:1 1 340px;min-width:310px"></div>
+      <div class="chart" id="ovAttUpphChart" style="height:380px;flex:1 1 340px;min-width:310px"></div>
+    </div>
+    <div class="chart" id="ovAttPersonChart" style="height:460px"></div>
+    <div id="ovAttText" class="ov-text"></div>
+  </div>
+
     <!-- 异常处理量（newocs 异常单管理 · 按异常类型 · 各仓独立展示） -->
   <div class="m-video" id="secException">
     <div class="sec-title">📊 异常处理量<span id="excRangeLbl" style="display:none"></span></div>
@@ -395,17 +407,7 @@ td.c-orange{color:#f2994a;font-weight:600}
   <div id="regSection"></div>
   </div><!-- /#legacyRegSection（原稽核量板块，总览隐藏） -->
 
-  <!-- 四仓人均出勤时长对比分析（仅总览显示） -->
-  <div id="ovAttSection" style="display:none">
-    <div class="sec-title">四仓人均出勤时长对比分析</div>
-    <div id="ovAttSummary"></div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <div class="chart" id="ovAttCityChart" style="height:380px;flex:1 1 340px;min-width:310px"></div>
-      <div class="chart" id="ovAttUpphChart" style="height:380px;flex:1 1 340px;min-width:310px"></div>
-    </div>
-    <div class="chart" id="ovAttPersonChart" style="height:460px"></div>
-    <div id="ovAttText" class="ov-text"></div>
-  </div>
+  <!-- 四仓人均出勤时长对比分析已移到「仓稽核量」正下方（#ovAttSection） -->
 
   <!-- 工艺工时：2026-11-10 用户要求移入新 tab「工艺工时参考」，仓数据分析 tab 不再显示（由 ref-mode 控制显隐） -->
   <div id="secGongshi">
