@@ -338,7 +338,7 @@ td.c-orange{color:#f2994a;font-weight:600}
   </div>
 
   <div id="cityCmpSection" style="display:none">
-  <div class="sec-title" style="margin-top:16px">四仓对比 · 异常处理量 / 上下架量 / 稽核量 / 出勤时长</div>
+  <div class="sec-title" style="margin-top:16px">仓主要处理量分析</div>
   <div class="hint">四仓<b>共同有</b>的四项数据横向对比，随上方「筛选条件」区间与「仓联动筛选」所选仓实时联动（选哪几个仓就对比哪几个仓）。异常处理量 / 上下架量 / 稽核量 / 出勤时长四项数量均<b>按人汇总到所属仓</b>（与「每人工作量」表口径完全一致：异常处理量=newocs 口径A、上下架量=操作人归属、稽核量=登记量按当日出勤分摊、出勤时长=实际打卡工时之和），个人数量保持独立不混淆。表格附四仓合计行；下方两张图分别为「三项处理量对比」与「出勤时长对比」。</div>
   <div id="cityCmpTable"></div>
   <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">
@@ -346,6 +346,21 @@ td.c-orange{color:#f2994a;font-weight:600}
     <div class="chart" id="cityCmpHrsChart" style="height:340px;flex:1 1 420px;min-width:320px"></div>
   </div>
   </div>
+  <!-- 仓稽核量（原「稽核量 · 登记量 · 占比与类型分析」）：2026-11-10 用户要求改名并挪到异常处理量板块之前，仅总览显示 -->
+  <div id="ovRegAnalysisSection" style="display:none">
+    <div class="sec-title">仓稽核量</div>
+    <div id="ovRegSummary"></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <div class="chart" id="ovRegDayChart" style="height:330px;flex:1 1 520px;min-width:330px"></div>
+      <div class="chart" id="ovRegPieChart" style="height:330px;flex:1 1 320px;min-width:300px"></div>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px">
+      <div class="chart" id="ovRegTypeChart" style="height:360px;flex:1 1 420px;min-width:330px"></div>
+      <div class="chart" id="ovRegProbChart" style="height:360px;flex:1 1 420px;min-width:330px"></div>
+    </div>
+    <div id="ovRegText" class="ov-text"></div>
+  </div>
+
     <!-- 异常处理量（newocs 异常单管理 · 按异常类型 · 各仓独立展示） -->
   <div class="m-video" id="secException">
     <div class="sec-title">📊 异常处理量<span id="excRangeLbl" style="display:none"></span></div>
@@ -363,6 +378,9 @@ td.c-orange{color:#f2994a;font-weight:600}
   <div id="gsPerTotTable"></div>
 
 
+  <!-- 原「稽核量」板块（标题 / 说明 / 抓取方式条 / 单仓每日明细）：2026-11-10 用户要求仓数据分析 tab 删除。
+       单仓 tab 仍需该每日明细与按日期切换控件（JS 依赖这些 id），故整体包进 #legacyRegSection，仅总览隐藏。 -->
+  <div id="legacyRegSection">
   <div class="sec-title" style="margin-top:16px">稽核量</div>
   <div class="hint">数据来源：飞书 wiki「客诉、流转风险识别」(CMI5wxhZ3iRrO1koLzxczUIlnrg · 子表 3f5583)，按 仓 + 日期 抓取；同类同罚相同 → 合并计次、数量累加。每日 T-1 自动刷新，抓取脚本 _pull_city_reg.py 支持 单日 / --date / --dates / --from--to 区间 / --days / --all 全量补抓。口径：抓到的行均计为<b>稽核登记量</b>；其中「失误问题」列非空且含「无异常」关键字之外内容的为失误单（失误人员 / 失误问题列不为空即为有失误，含「无异常」的为无失误订单）。<b>仓数据分析（总览）下合并为一张「各仓稽核量排列」表</b>（稽核登记量 / 失误量 / 无异常量 / 失误占比 采用同一口径），单仓 tab 展示该仓每日登记与失误明细。</div>
   <div class="fp-quick" id="regDateBar" style="margin:9px 0 6px;padding-top:9px;border-top:1px dashed #e6eaf0">
@@ -375,21 +393,9 @@ td.c-orange{color:#f2994a;font-weight:600}
     <span id="regDateTip" style="color:#9aa4b6"></span>
   </div>
   <div id="regSection"></div>
-  <div id="ovRegAnalysisSection" style="display:none">
-    <div class="sec-title">稽核量 · 登记量 · 占比与类型分析</div>
-    <div id="ovRegSummary"></div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <div class="chart" id="ovRegDayChart" style="height:330px;flex:1 1 520px;min-width:330px"></div>
-      <div class="chart" id="ovRegPieChart" style="height:330px;flex:1 1 320px;min-width:300px"></div>
-    </div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px">
-      <div class="chart" id="ovRegTypeChart" style="height:360px;flex:1 1 420px;min-width:330px"></div>
-      <div class="chart" id="ovRegProbChart" style="height:360px;flex:1 1 420px;min-width:330px"></div>
-    </div>
-    <div id="ovRegText" class="ov-text"></div>
-  </div>
+  </div><!-- /#legacyRegSection（原稽核量板块，总览隐藏） -->
 
-  <!-- 四仓人均出勤时长对比分析（2026-11-10 用户要求：从总览专题区移到稽核量板块正下方，仍仅总览显示） -->
+  <!-- 四仓人均出勤时长对比分析（仅总览显示） -->
   <div id="ovAttSection" style="display:none">
     <div class="sec-title">四仓人均出勤时长对比分析</div>
     <div id="ovAttSummary"></div>
@@ -460,7 +466,7 @@ td.c-orange{color:#f2994a;font-weight:600}
       <div class="chart" id="ovMsgRateChart" style="height:520px;flex:1 1 320px;min-width:300px"></div>
     </div>
     <div id="ovMsgText" class="ov-text"></div>
-    <!-- 四仓人均出勤时长对比分析已移到「稽核量」板块正下方（#ovAttSection） -->
+    <!-- 四仓人均出勤时长对比分析已移到 #ovAttSection（仅总览显示） -->
   </div>
 
 </div>
@@ -1011,14 +1017,14 @@ const GS_GONGSHI = [
   {name:'取退货', city:'西安', rate:'4.5', logic:'7-9 月前台退取货→末次回复均值（剔除 1 条 14.3h 跨天异常，n=324）；核心指标 / 每人表：取退货理论耗时 = 取退货量 × 4.5', date:'2026-09-15'},
   {name:'视频调取', city:'西安', rate:'6.05', logic:'每日明细(西安) Q列(视频调取耗时) ÷ P列(视频调取量) 逐行商之均值；视频调取量 = ①视频调取主体 + ②群视频 + ③西安流转专项 三部分按人累计；理论耗时 = 视频调取量 × 6.05', date:'2026-09-18'},
   {name:'流转专项视频', city:'西安', rate:'6.05', logic:'与视频调取同口径（取每日明细 Q 列平均）；已并入「视频调取量」第三部分，不单独重复计费', date:'2026-09-18'},
-  {name:'SW稽核', city:'西安', rate:'按图', logic:'SW 按每日实际审核图片（SW检查表附件）D 板块 SW.T +5%(变差) +3min 计（180s/图）；每图环节 / 产品不同、不取均值；5S / 安全另按 600s/次。看板直接取每日明细实际耗时 swH2，不乘固定费率；含「张霞霞 / 王妙星当日登记量均 >0 才对半拆」的对半原则', date:'2026-09-18'},
+  {name:'SW稽核', city:'西安', rate:'按图', logic:'SW 按每日实际审核图片（SW检查表附件）D 板块 SW.T +5%(变差) +3min 计（180s/图）；每图环节 / 产品不同、不取均值；5S / 安全另按 600s/次。看板直接取每日明细实际耗时 swH2，不乘固定费率', date:'2026-09-18'},
   {name:'异常邮件跟进', city:'西安', rate:'1', logic:'工艺工时摸底「异常邮件处理」1 分/条；按当日出勤在 张霞霞 / 马红霞 / 杨凡凡 间整数平分（2026-10-25 起口径）；理论耗时 = 异常邮件条数 × 1', date:'2026-09-08'},
   {name:'工单处理', city:'西安', rate:'43.1', logic:'根据 1-9 月西安仓处理时效与工单总数计算（去掉异常数据）；看板「每人工作量」已预留工单列（gdQ），数据源待接入，暂以 0 计入、不参与理论耗时', date:'2026-09-08'},
   {name:'消息回复（客诉对接）', city:'四仓', rate:'16.19', logic:'7-9 月四仓群消息「被@→回复」平均响应时长（按实际回复人统计，非被@人）：西安 / 成都 / 天津 15.72、沈阳 17.6；2026-11-10 四仓合并为统一标准工时 = (15.72 + 17.6 + 15.72 + 15.72) ÷ 4 = <b>16.19 分/次</b>（原 4 条各仓费率明细行已删除）；看板理论耗时 = Σ(每人回复次数 × 所属仓实测费率)', date:'2026-11-10'},
   {name:'异常处理', city:'四仓', rate:'2', logic:'2026-09 四仓 12,441 条处理时间差（异常上架−异常接收、完成异常−异常下架）中位数 2.0 分；均值 8.6 分受长尾影响，2026-11-10 用户拍板改用中位数；处理量 = newocs 口径A（最后一步处理人归属、该步时间=当天）；理论耗时 = 异常处理量 × 2', date:'2026-11-10'},
-  {name:'上下架', city:'四仓', rate:'0.5', logic:'2026-11-10 用户确认 0.5 分/条（原 9 月摸底 2.8 分/条已停用）；处理量 = newocs 异常库上下架记录按操作人归属；理论耗时 = 上下架量 × 0.5', date:'2026-11-10'},
+  {name:'上下架', city:'四仓', rate:'0.5', logic:'处理量 = newocs 异常库上下架记录按操作人归属；理论耗时 = 上下架量 × 0.5', date:'2026-11-10'},
   {name:'稽核量', city:'四仓', rate:'5', logic:'占位标准 5 分/条（准确值待工艺确认）；稽核量 = 各仓当日登记量（含无异常）按当日出勤的异常组目标人整数平分；理论耗时 = 稽核量 × 5', date:'2026-11-06'},
-  {name:'外呼', city:'—', rate:'—', logic:'已停用：2026-11-06 起异常处理量统一改用 newocs 口径A（最后一步处理人归属），原「外呼登记分摊」不再单独计量，看板无对应列', date:'2026-11-06'},
+  {name:'外呼', city:'—', rate:'—', logic:'—', date:'2026-11-06'},
 ];
 function renderGongshiTable(){
   const wrap=document.getElementById('gsGongshiTable');
@@ -2905,7 +2911,7 @@ function gsHighlightWh(wh){
     // 独立「工艺工时参考」看板：ref-mode CSS 隐藏主面板其它所有板块，只留 #secGongshi
     gsIsOverview=false; gsWhFilter='all';
     document.body.classList.remove('ov-clean');
-    ['overviewSection','cityCmpSection','ovRegAnalysisSection','ovAttSection','legacyChartsSection','ovWhField'].forEach(id=>_secD(id,false));
+    ['overviewSection','cityCmpSection','ovRegAnalysisSection','ovAttSection','legacyChartsSection','legacyRegSection','ovWhField'].forEach(id=>_secD(id,false));
     _secD('secGongshi', true);
     renderGongshiTable();       // gsCitySet() 在 ref 模式返回四仓 → 全部工艺行都显示
     if(window.ovCloseCitySel) ovCloseCitySel();
@@ -2913,10 +2919,13 @@ function gsHighlightWh(wh){
   }
   gsIsOverview = (wh==='总览');
   gsWhFilter = gsIsOverview ? 'all' : wh;
+  // 总览已隐藏「抓取方式」条（随原稽核量板块一起删除）→ 进入总览强制回到「按区间」，避免按日期模式无控件可切回
+  if(gsIsOverview){ regDayMode=false; regSyncBar(); }
   _secD('overviewSection', gsIsOverview);
   _secD('cityCmpSection', gsIsOverview);      // 「各仓处理量/处理时长/出勤时长对比」仅总览(仓数据分析) tab 显示
-  _secD('ovRegAnalysisSection', gsIsOverview); // 「稽核量·登记量·占比与类型分析」在稽核量板块正下方，仅总览显示
-  _secD('ovAttSection', gsIsOverview);         // 「四仓人均出勤时长对比分析」2026-11-10 移到稽核量板块下，仍仅总览显示
+  _secD('ovRegAnalysisSection', gsIsOverview); // 「仓稽核量」已改名并挪到异常处理量之前，仅总览显示
+  _secD('ovAttSection', gsIsOverview);         // 「四仓人均出勤时长对比分析」仅总览显示
+  _secD('legacyRegSection', !gsIsOverview);    // 原「稽核量」板块：2026-11-10 总览删除，单仓 tab 保留每日明细
   _secD('legacyChartsSection', !gsIsOverview); // 总览已删除「每人工作量对比 / 趋势分析① / 趋势分析②」；单仓 tab 保留
   _secD('secGongshi', false);                  // 工艺工时已移出仓数据分析 tab
   document.body.classList.toggle('ov-clean', gsIsOverview);          // 仓数据分析 tab 隐藏全部灰色说明小字
