@@ -56,6 +56,9 @@ body.ov-clean .tab:not(.active){color:var(--ink)!important}
 body.ov-clean td.na,body.ov-clean td.att-na,body.ov-clean .att-na,
 body.ov-clean #panel-gongshi #gsGongshiTable td.na,
 body.ov-clean td[style*="98a2b3"],body.ov-clean span[style*="9aa0a6"]{color:var(--ink)!important}
+/* 「工艺工时参考」tab：只保留工艺工时板块，其余板块一律隐藏（单文件看板内新建独立视图） */
+body.ref-mode #panel-gongshi > *:not(#secGongshi){display:none!important}
+body.ref-mode #secGongshi{margin-top:8px}
 .ring{display:inline-flex;gap:6px;align-items:center;font-size:12px;margin-left:8px}
 .ring.up{color:var(--green)} .ring.down{color:var(--red)} .ring.flat{color:var(--sub)}
 .pct-tbl{margin-top:14px}
@@ -266,6 +269,7 @@ td.c-orange{color:#f2994a;font-weight:600}
   <div class="tab" data-wh="成都">成都</div>
   <div class="tab" data-wh="天津">天津</div>
   <div class="tab" data-wh="总览">仓数据分析</div>
+  <div class="tab" data-wh="工艺工时参考">工艺工时参考</div>
 </div>
 
 <!-- 每日工作量输出 模块（取退货 / 消息对接 / SW稽核 · 核算起始 2026-09-14 · T-1 更新） -->
@@ -385,12 +389,23 @@ td.c-orange{color:#f2994a;font-weight:600}
     <div id="ovRegText" class="ov-text"></div>
   </div>
 
+  <!-- 四仓人均出勤时长对比分析（2026-11-10 用户要求：从总览专题区移到稽核量板块正下方，仍仅总览显示） -->
+  <div id="ovAttSection" style="display:none">
+    <div class="sec-title">四仓人均出勤时长对比分析</div>
+    <div id="ovAttSummary"></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <div class="chart" id="ovAttCityChart" style="height:380px;flex:1 1 340px;min-width:310px"></div>
+      <div class="chart" id="ovAttUpphChart" style="height:380px;flex:1 1 340px;min-width:310px"></div>
+    </div>
+    <div class="chart" id="ovAttPersonChart" style="height:460px"></div>
+    <div id="ovAttText" class="ov-text"></div>
+  </div>
+
+  <!-- 工艺工时：2026-11-10 用户要求移入新 tab「工艺工时参考」，仓数据分析 tab 不再显示（由 ref-mode 控制显隐） -->
   <div id="secGongshi">
   <div class="sec-title">工艺工时 · 标准工时与计算逻辑（四仓）</div>
   <div id="gsGongshiTable"></div>
   </div>
-
-
 
   <div class="m-video">
     <div class="sec-title">📅 各人出勤<span id="attRangeLbl" style="display:none"></span></div>
@@ -402,6 +417,9 @@ td.c-orange{color:#f2994a;font-weight:600}
     <div class="hint">所选区间内每日出勤人数（左轴）与出勤率＝当日出勤人数 ÷ 所选仓应出勤人数（仓筛选=全部时为四仓合计 26 人，选西安 5 / 沈阳 3 / 成都 5 / 天津 13 人）（右轴）。</div>
     <div class="chart" id="attChart" style="height:300px"></div>
   </div>
+  <!-- 2026-11-10 用户要求：仓数据分析(总览) tab 删除「每人工作量对比 / 趋势分析① / 趋势分析②」三块；
+       单仓 tab 仍保留，故不物理删除 DOM，仅在总览隐藏（legacyChartsSection）。 -->
+  <div id="legacyChartsSection">
   <div class="sec-title" style="margin-top:14px">每人工作量对比</div>
   <div class="hint">区间累计：取退货 / 消息回复 / SW稽核 / 视频调取量 / 异常邮件跟进 均为所选区间合计（视频调取量 = 区间内各视频日 Part2+群视频 Part3+西安流转专项视频按人累计，与表格、核心指标口径一致，随区间筛选联动）。</div>
   <div class="chart" id="perChart" style="height:340px"></div>
@@ -413,6 +431,7 @@ td.c-orange{color:#f2994a;font-weight:600}
   <div class="sec-title">趋势分析 ② 理论耗时</div>
   <div class="hint">提示：点击图例可显示/隐藏对应指标；折线断开处表示该指标当日暂无采集数据（非 0）。</div>
   <div class="chart" id="gsHoursChart" style="height:340px"></div>
+  </div>
 
   <!-- 总看板（总览 tab 专属）：四仓全员总表 + 消息回复 / 流转失误 专题分析 -->
   <div id="overviewSection" style="display:none">
@@ -441,17 +460,7 @@ td.c-orange{color:#f2994a;font-weight:600}
       <div class="chart" id="ovMsgRateChart" style="height:520px;flex:1 1 320px;min-width:300px"></div>
     </div>
     <div id="ovMsgText" class="ov-text"></div>
-
-
-
-    <div class="sec-title">四仓人均出勤时长对比分析</div>
-    <div id="ovAttSummary"></div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <div class="chart" id="ovAttCityChart" style="height:380px;flex:1 1 340px;min-width:310px"></div>
-      <div class="chart" id="ovAttUpphChart" style="height:380px;flex:1 1 340px;min-width:310px"></div>
-    </div>
-    <div class="chart" id="ovAttPersonChart" style="height:460px"></div>
-    <div id="ovAttText" class="ov-text"></div>
+    <!-- 四仓人均出勤时长对比分析已移到「稽核量」板块正下方（#ovAttSection） -->
   </div>
 
 </div>
@@ -518,10 +527,12 @@ const GS_DATES = Array.from(new Set([...Object.keys(G.dates), ...Object.keys(S.d
   for(const _d in G.dates){ const _g=G.dates[_d]; if(_g && _g.msg_reply_per){ let _s=0; for(const _k in _g.msg_reply_per){ _s += (_g.msg_reply_per[_k].replied||0)*_msgRateOf(_k); } _g.msg_reply_hours = +_s.toFixed(1); } }
 let gsWhFilter = '西安';          // '西安' | '沈阳' | '成都' | '天津' | 'all'(总览)
 let gsIsOverview = false;         // 总览 tab 是否激活（标准板显示全部 + 对比分析）
+let gsIsRef = false;              // 「工艺工时参考」独立 tab 是否激活（只显示工艺工时对照表）
 // ——「有效仓集合」统一口径：总览 tab 下所有子模块都以此为准，实现全看板随「仓联动筛选」联动 ——
 //   单仓 tab → [该仓]；总览 tab → 仓联动筛选所选仓（默认四仓全量）
 function _ovFallbackCities(){ return ['西安','沈阳','成都','天津']; }
 function gsCitySet(){
+  if(gsIsRef) return ['西安','沈阳','成都','天津'];   // 工艺工时参考 tab：四仓工艺全量展示
   if(!gsIsOverview) return [gsWhFilter];
   const _all = (typeof OV_CITIES!=='undefined' && OV_CITIES && OV_CITIES.length) ? OV_CITIES : _ovFallbackCities();
   const _sel = (typeof OV_SEL!=='undefined' && OV_SEL) ? OV_SEL : [];   // 未选任何仓 → 空集合（各模块空态，不再回落全量）
@@ -636,6 +647,8 @@ function jzPerCalc(start, end){
 function rngDaysSrc(start,end){ return GS_DATES.filter(d=>d>=start && d<=end); }
 function renderGongshi(){
   const start=gsRngStartPicker.value, end=gsRngEndPicker.value;
+  // 「工艺工时参考」tab：只渲染工艺工时对照表，其余图表/表格一律不重算（其 DOM 在 ref-mode 下被隐藏）
+  if(gsIsRef){ const _sg=document.getElementById('secGongshi'); if(_sg) _sg.style.display=''; renderGongshiTable(); return; }
   // —— 板块显隐联动 ——
   // ① 总览 tab：隐藏「核心指标」「工艺工时」两板块（其余板块照常）
   // ② 所选仓不含西安（沈阳 / 成都 / 天津 单仓，或总览只选这些仓）：核心指标仅留「消息回复 + 异常处理量/上下架量/稽核量 + 合计」、
@@ -644,7 +657,7 @@ function renderGongshi(){
   const _sec=(id,show)=>{ const e=document.getElementById(id); if(e) e.style.display = show?'':'none'; };
   const isXianTab = (!gsIsOverview && gsWhFilter==='西安');   // 西安单仓 tab：视频调取量即稽核量，二者合并展示
   _sec('secCore', !gsIsOverview);
-  _sec('secGongshi', gsIsOverview);   // 2026-11-10 用户指示：工艺工时板块挪到仓数据分析(总览) tab，单仓 tab 不再显示
+  _sec('secGongshi', false);   // 2026-11-10：工艺工时已移到独立「工艺工时参考」tab，仓数据分析 / 单仓 tab 均不显示
   // 2026-11-09 用户指示：总览(仓数据分析)删掉「各理论耗时量对比」(仅西安口径)，四仓共同数据对比统一由「四仓对比」板块承载；单仓 tab 保留
   _sec('secCmp', _hasXA && !gsIsOverview);
   ['gsRowTq','gsRowSw','gsRowVid','gsRowMail','gsRowUpph'].forEach(id=>_sec(id,_hasXA));
@@ -915,7 +928,9 @@ function renderGongshi(){
   }
   }
 
-  // ⑦ 趋势分析：切片到所选区间
+  // ⑦ 趋势分析：切片到所选区间（2026-11-10 用户要求：仓数据分析 tab 删除这两张图 → 隐藏时不再初始化 / 渲染）
+  const _legacyOff = (gsIsOverview || gsIsRef);
+  if(!_legacyOff){
   if(!gsQtyChart)   gsQtyChart=echarts.init(document.getElementById('gsQtyChart'));
   if(!gsHoursChart) gsHoursChart=echarts.init(document.getElementById('gsHoursChart'));
   const _shComp=d=>{
@@ -972,6 +987,7 @@ function renderGongshi(){
     ]
   }), true);
   if(gsCmpChart) gsCmpChart.resize(); gsQtyChart.resize(); gsHoursChart.resize();
+  } // /if(!_legacyOff)
   // 每人每天的出勤详情 随区间联动
   renderAttRange(start,end);
   // ④ 出勤趋势折线图 / ⑤ 每人工作量对比图（随筛选联动）
@@ -1930,6 +1946,7 @@ function renderShelf(start, end){
 }
 // ⑤ 每人工作量对比图// ⑤ 每人工作量对比图：取退货 / 消息回复 / SW稽核 / 视频调取 / 异常邮件（均为区间累计，随筛选联动）
 function renderPerChart(start,end){
+  if(gsIsOverview || gsIsRef) return;   // 2026-11-10：仓数据分析 tab 已删除「每人工作量对比」图
   const el=document.getElementById('perChart'); if(!el) return;
   if(!perChart) perChart=echarts.init(el);
   const rngDays=gsRangeDays();
@@ -2879,18 +2896,31 @@ function renderOverview(){
 })();
 // 仓看板高亮（西安 / 沈阳 / 成都 / 天津 / 总览）：同步更新顶部 tab 选中态
 function gsHighlightWh(wh){
+  const isRef = (wh==='工艺工时参考');
+  gsIsRef = isRef;
+  document.body.classList.toggle('ref-mode', isRef);
+  document.querySelectorAll('#boardTabs .tab').forEach(b=>b.classList.toggle('active', b.dataset.wh===wh));
+  const _secD=(id,show)=>{ const e=document.getElementById(id); if(e) e.style.display = show?'':'none'; };
+  if(isRef){
+    // 独立「工艺工时参考」看板：ref-mode CSS 隐藏主面板其它所有板块，只留 #secGongshi
+    gsIsOverview=false; gsWhFilter='all';
+    document.body.classList.remove('ov-clean');
+    ['overviewSection','cityCmpSection','ovRegAnalysisSection','ovAttSection','legacyChartsSection','ovWhField'].forEach(id=>_secD(id,false));
+    _secD('secGongshi', true);
+    renderGongshiTable();       // gsCitySet() 在 ref 模式返回四仓 → 全部工艺行都显示
+    if(window.ovCloseCitySel) ovCloseCitySel();
+    return;
+  }
   gsIsOverview = (wh==='总览');
   gsWhFilter = gsIsOverview ? 'all' : wh;
-  document.querySelectorAll('#boardTabs .tab').forEach(b=>b.classList.toggle('active', b.dataset.wh===wh));
-  const ov=document.getElementById('overviewSection');
-  if(ov) ov.style.display = gsIsOverview ? '' : 'none';
-  const cmpSec=document.getElementById('cityCmpSection');   // 「各仓处理量/处理时长/出勤时长对比」仅总览(仓数据分析) tab 显示，单仓 tab 不显示
-  if(cmpSec) cmpSec.style.display = gsIsOverview ? '' : 'none';
-  const ovRegSec=document.getElementById('ovRegAnalysisSection');   // 「稽核量·登记量·占比与类型分析」已移到稽核量板块正下方，仍仅总览显示
-  if(ovRegSec) ovRegSec.style.display = gsIsOverview ? '' : 'none';
+  _secD('overviewSection', gsIsOverview);
+  _secD('cityCmpSection', gsIsOverview);      // 「各仓处理量/处理时长/出勤时长对比」仅总览(仓数据分析) tab 显示
+  _secD('ovRegAnalysisSection', gsIsOverview); // 「稽核量·登记量·占比与类型分析」在稽核量板块正下方，仅总览显示
+  _secD('ovAttSection', gsIsOverview);         // 「四仓人均出勤时长对比分析」2026-11-10 移到稽核量板块下，仍仅总览显示
+  _secD('legacyChartsSection', !gsIsOverview); // 总览已删除「每人工作量对比 / 趋势分析① / 趋势分析②」；单仓 tab 保留
+  _secD('secGongshi', false);                  // 工艺工时已移出仓数据分析 tab
   document.body.classList.toggle('ov-clean', gsIsOverview);          // 仓数据分析 tab 隐藏全部灰色说明小字
-  const ovField=document.getElementById('ovWhField');        // 顶部「筛选条件」面板里的仓联动筛选：仅总览 tab 可见
-  if(ovField) ovField.style.display = gsIsOverview ? '' : 'none';
+  _secD('ovWhField', gsIsOverview);            // 顶部「筛选条件」面板里的仓联动筛选：仅总览 tab 可见
   if(!gsIsOverview && window.ovCloseCitySel) ovCloseCitySel();   // 离开总览时收起下拉面板
   if(window.ovSyncCityBar) ovSyncCityBar();
   regOnCityChange();     // 流转失误「按日期」模式下，切仓自动落到该仓最近的登记日
@@ -2972,7 +3002,9 @@ document.querySelectorAll('.fp-quick button').forEach(b=>{
 // 仓看板切换（西安 / 沈阳）：点击即联动重渲染，不改变日期区间与考勤明细折叠状态
 document.querySelectorAll('#boardTabs .tab').forEach(b=>{
   b.onclick=()=>{
-    gsHighlightWh(b.dataset.wh);                 // 先写入当前仓（gsWhFilter / gsIsOverview）
+    const wh=b.dataset.wh;
+    gsHighlightWh(wh);                 // 先写入当前仓（gsWhFilter / gsIsOverview / gsIsRef）
+    if(wh==='工艺工时参考') return;   // 静态参考看板：不重算区间 / 不触发主看板渲染，避免改动全局区间
     if(!gsRangeManual) gsSetDefaultRange(3);     // 再按目标仓的数据末日重置默认区间（成都 / 天津源止于 9-30，不会被 10 月窗口切空）
     renderGongshi();
     regSyncBar();
