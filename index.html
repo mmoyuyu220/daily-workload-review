@@ -46,8 +46,16 @@ select,input[type=date]{font-size:14px;padding:8px 10px;border:1px solid var(--l
 .metric-chk label{display:inline-flex;align-items:center;gap:6px;background:#f3f6fc;border:1px solid var(--line);border-radius:20px;padding:5px 12px;font-size:13px;cursor:pointer;user-select:none}
 .metric-chk input{accent-color:var(--blue)}
 .hint{font-size:12px;color:var(--sub);margin:4px 0 10px}
-/* 仓数据分析(总览) tab：2026-11-10 用户要求移除全部灰色说明小字，一个不留；单仓 tab 不受影响 */
-body.ov-clean .hint,body.ov-clean .lbl,body.ov-clean .fp-note,body.ov-clean .ov-empty,body.ov-clean #regDateTip,body.ov-clean .foot{display:none!important}
+/* 仓数据分析(总览) tab：2026-11-10 用户二次确认「灰色小字一个不留」——说明、单位、备注、区间提示全部隐藏；单仓 tab 不受影响 */
+body.ov-clean .hint,body.ov-clean .lbl,body.ov-clean .fp-note,body.ov-clean .fp-quick>span,
+body.ov-clean .ov-empty,body.ov-clean #regDateTip,body.ov-clean .foot,
+body.ov-clean .thu,body.ov-clean .gs-un,body.ov-clean .clsc .cl,body.ov-clean .grp .u{display:none!important}
+/* 控件标签 / 数据占位保留文字但改深色，不再以灰色小字出现 */
+body.ov-clean .fp-field label,body.ov-clean .ov-citybar .cb-lbl{color:var(--ink)!important;font-weight:700!important}
+body.ov-clean .tab:not(.active){color:var(--ink)!important}
+body.ov-clean td.na,body.ov-clean td.att-na,body.ov-clean .att-na,
+body.ov-clean #panel-gongshi #gsGongshiTable td.na,
+body.ov-clean td[style*="98a2b3"],body.ov-clean span[style*="9aa0a6"]{color:var(--ink)!important}
 .ring{display:inline-flex;gap:6px;align-items:center;font-size:12px;margin-left:8px}
 .ring.up{color:var(--green)} .ring.down{color:var(--red)} .ring.flat{color:var(--sub)}
 .pct-tbl{margin-top:14px}
@@ -320,12 +328,6 @@ td.c-orange{color:#f2994a;font-weight:600}
 
   
 
-  <div id="secGongshi">
-  <div class="sec-title">工艺工时</div>
-  <div class="hint">每日明细中（一部分）的耗时按本表标准工时自动计算（耗时 = 处理量 × 标准工时）。来源：飞书「工艺工时摸底」子表（视频调取 / 流转专项视频 标准工时另取每日明细(西安)Q列「视频调取耗时÷量」均值），更新于 2026-09-18。</div>
-  <div id="gsGongshiTable"></div>
-  </div>
-
   <div id="secCmp">
   <div class="sec-title">各理论耗时量对比</div>
   <div class="chart" id="gsCmpChart" style="height:300px"></div>
@@ -380,8 +382,12 @@ td.c-orange{color:#f2994a;font-weight:600}
       <div class="chart" id="ovRegTypeChart" style="height:360px;flex:1 1 420px;min-width:330px"></div>
       <div class="chart" id="ovRegProbChart" style="height:360px;flex:1 1 420px;min-width:330px"></div>
     </div>
-    <div id="ovRegDaily"></div>
     <div id="ovRegText" class="ov-text"></div>
+  </div>
+
+  <div id="secGongshi">
+  <div class="sec-title">工艺工时 · 标准工时与计算逻辑（四仓）</div>
+  <div id="gsGongshiTable"></div>
   </div>
 
 
@@ -638,7 +644,7 @@ function renderGongshi(){
   const _sec=(id,show)=>{ const e=document.getElementById(id); if(e) e.style.display = show?'':'none'; };
   const isXianTab = (!gsIsOverview && gsWhFilter==='西安');   // 西安单仓 tab：视频调取量即稽核量，二者合并展示
   _sec('secCore', !gsIsOverview);
-  _sec('secGongshi', !gsIsOverview);
+  _sec('secGongshi', gsIsOverview);   // 2026-11-10 用户指示：工艺工时板块挪到仓数据分析(总览) tab，单仓 tab 不再显示
   // 2026-11-09 用户指示：总览(仓数据分析)删掉「各理论耗时量对比」(仅西安口径)，四仓共同数据对比统一由「四仓对比」板块承载；单仓 tab 保留
   _sec('secCmp', _hasXA && !gsIsOverview);
   ['gsRowTq','gsRowSw','gsRowVid','gsRowMail','gsRowUpph'].forEach(id=>_sec(id,_hasXA));
@@ -701,7 +707,7 @@ function renderGongshi(){
   th=_cityPick('th'); mh=_cityPick('mh'); sh=_cityPick('shh');
   if(!_ALLPICK && _AC.indexOf('西安')<0){ vq=0; mailq=0; vqP2=0; vqP3=0; vqP1=0; }   // 视频调取 / 异常邮件跟进 仅分摊至西安人员 → 所选仓不含西安则 0
   // 异常处理量（newocs 口径A）/ 上下架量 / 稽核量 —— 核心指标行，口径与「每人工作量」表完全一致，按所选仓人员汇总
-  const EXC_RATE = 8.6;    // 异常处理 8.6 分/单（2026-09 四仓实测）
+  const EXC_RATE = 2;      // 异常处理 2 分/单（2026-09 四仓 12,441 条时间差中位数，2026-11-10 用户确认）
   const SHELF_RATE = 0.5;  // 上下架 0.5 分/条（用户 2026-11-10 确认）
   const JZ_RATE = 5;       // 稽核量 5 分/条（占位标准）
   const _corePeople = _AC.reduce((a,c)=>a.concat(CITY_PEOPLE[c]||[]),[]);
@@ -791,7 +797,7 @@ function renderGongshi(){
     const VID_RATE = 6.05;
     const SHELF_RATE = 0.5;  // 上下架工艺工时：0.5 分/条（2026-11-10 用户确认）
     const JZ_RATE = 5;       // 稽核量 工艺工时占位：5 分/条
-    const EXC_RATE = 8.6;    // 异常处理 工艺公时：8.6 分/单（2026-09 四仓 13,834 单实测：异常上架−异常接收 与 完成异常−异常下架 时间差的平均值）
+    const EXC_RATE = 2;      // 异常处理工艺工时：2 分/单（中位数；均值 8.6 受长尾影响，2026-11-10 用户拍板改用中位数）
     const tuihuoTheo = +(a*TUH).toFixed(1);
     const vidTheo = +(vid*VID_RATE).toFixed(1);
     const shelfTheo = +(shelfQ*SHELF_RATE).toFixed(1);
@@ -830,7 +836,7 @@ function renderGongshi(){
     {k:'swH2',       h:'SW稽核理论耗时<span class="thu">(分)</span>',   f:r=>fmt(r.swH2),             n:'SW稽核（见「工艺工时」对照表）'},
     {k:'mailH',      h:'异常邮件理论耗时<span class="thu">(分)</span>', f:r=>r.mailH.toFixed(1),      n:'异常邮件跟进 1 分/条'},
     {k:'vidTheo',    h:'视频调取理论耗时<span class="thu">(分)</span>', f:r=>r.vidTheo.toFixed(1),    n:'视频调取 6.05 分/个'},
-    {k:'excH',       h:'异常处理理论耗时<span class="thu">(分)</span>', f:r=>r.excH.toFixed(1),          n:'异常处理 8.6 分/单（9月四仓实测）'},
+    {k:'excH',       h:'异常处理理论耗时<span class="thu">(分)</span>', f:r=>r.excH.toFixed(1),          n:'异常处理 2 分/单（9月四仓实测中位数）'},
     {k:'shelfTheo',  h:'上下架理论耗时<span class="thu">(分)</span>',   f:r=>r.shelfTheo.toFixed(1),  n:'上下架 0.5 分/条'},
     {k:'gdTheo',     h:'工单理论耗时<span class="thu">(分)</span>',     f:r=>'\u2014',                n:'工单处理量（数据源待定）', force:true},
     {k:'jzTheo',     h:'稽核量理论耗时<span class="thu">(分)</span>',   f:r=>r.jzTheo.toFixed(1),     n:'稽核量（登记量）5 分/条（占位标准）', force:true}
@@ -858,7 +864,7 @@ function renderGongshi(){
       + cb.map(c=>'<td>'+c.f(r)+'</td>').join('')
       +'<td class="c-blue"><b>'+r.totTheo.toFixed(1)+' 分 = '+(r.totTheo/60).toFixed(2)+' 小时</b></td></tr>';
   });
-  htmlB+='</table><div class="hint" style="margin-top:6px">理论耗时 = 处理量 × 标准工时（取退货 4.5 分/件、消息回复 15.72 分/次、SW稽核见「工艺工时」对照表、异常邮件跟进 1 分/条、视频调取 6.05 分/个、上下架 0.5 分/条、稽核量 5 分/条——后两项为占位标准，准确值待工艺确认后替换）；<b>异常处理 8.6 分/单</b>（2026-09 四仓全量 13,834 单实测：明细「异常上架 − 异常接收」均值 5.8 分 + 「完成异常 − 异常下架」均值 11.5 分，两段时间差合并平均，结果存 _exc_gongshi_result.json）；工单处理量数据源待接、以「—」占位；个人总处理量理论耗时 = 以上各项理论耗时之和。'+hidNote('理论耗时',hidB)+'</div>';
+  htmlB+='</table><div class="hint" style="margin-top:6px">理论耗时 = 处理量 × 标准工时（取退货 4.5 分/件、消息回复 15.72 分/次、SW稽核见「工艺工时」对照表、异常邮件跟进 1 分/条、视频调取 6.05 分/个、上下架 0.5 分/条、稽核量 5 分/条——后两项为占位标准，准确值待工艺确认后替换）；<b>异常处理 2 分/单</b>（2026-09 四仓 12,441 条处理时间差的中位数 2.0 分；均值 8.6 分受长尾影响，2026-11-10 用户拍板改用中位数，结果存 _exc_gongshi_result.json）；工单处理量数据源待接、以「—」占位；个人总处理量理论耗时 = 以上各项理论耗时之和。'+hidNote('理论耗时',hidB)+'</div>';
   document.getElementById('gsPerTotTable').innerHTML = htmlA + htmlB;
 
   // ④ 区间汇总口径（含异常邮件跟进、视频调取、异常处理、上下架处理量、稽核量；与每人表口径一致）
@@ -983,38 +989,40 @@ window.ATT_DATA = {"source":"排班表/8月及以后 (Z6U6uk)","spreadsheet_toke
 
 const ATT = window.ATT_DATA;
 const ATT_WK = ['日','一','二','三','四','五','六'];
-// 工艺工时摸底 · 标准工时对照表（源：飞书排班表/8月及以后(Z6U6uk)，考勤 2026-10-20 刷新
+// 工艺工时摸底 · 标准工时对照表（2026-11-10 补全：把看板中所有在用工艺的「工艺名称 / 标准工时 / 计算逻辑 / 适用仓 / 更新日期」全部登记）
+// 来源：飞书「工艺工时摸底」子表 + 2026-09 四仓实测 + 用户确认值；统一公式 理论耗时 = 处理量 × 标准工时
 const GS_GONGSHI = [
-  {name:'外呼', rate:'', logic:'', date:''},
-  {name:'上下架', rate:'2.8', logic:'', date:'2026-09-08'},
-  {name:'异常邮件跟进', rate:'1', logic:'异常邮件处理', date:'2026-09-08'},
-  {name:'工单处理', rate:'43.1', logic:'根据1-9月西安仓处理时效与工单总数计算（去掉异常数据）', date:'2026-09-08'},
-  {name:'异常处理', rate:'', logic:'', date:''},
-  {name:'取退货', rate:'4.5', logic:'7-9月 前台退取货→末次回复均值(剔除1条14.3h跨天异常, n=324)', date:'2026-09-15'},
-  {name:'消息对接', rate:'15.72', logic:'7-9月 看板响应时长加权均值', date:'2026-09-15'},
-  {name:'视频调取', rate:'6.05', logic:'每日明细(西安) Q列(视频调取耗时)÷P列(视频调取量) 逐行商之均值', date:'2026-09-18'},
-  {name:'流转专项视频', rate:'6.05', logic:'同视频调取（西安流转专项与视频调取同口径，取每日明细Q列平均）', date:'2026-09-18'},
-  {name:'SW稽核', rate:'', logic:'SW按每日实际审核图片(SW检查表附件)D板块SW.T+5%(变差)+3min计（180s/图）；每图环节/产品不同、工艺工时不同、不取均值（以图中为准）；5S/安全另按600s/次', date:'2026-09-18'},
+  {name:'取退货', city:'西安', rate:'4.5', logic:'7-9 月前台退取货→末次回复均值（剔除 1 条 14.3h 跨天异常，n=324）；核心指标 / 每人表：取退货理论耗时 = 取退货量 × 4.5', date:'2026-09-15'},
+  {name:'视频调取', city:'西安', rate:'6.05', logic:'每日明细(西安) Q列(视频调取耗时) ÷ P列(视频调取量) 逐行商之均值；视频调取量 = ①视频调取主体 + ②群视频 + ③西安流转专项 三部分按人累计；理论耗时 = 视频调取量 × 6.05', date:'2026-09-18'},
+  {name:'流转专项视频', city:'西安', rate:'6.05', logic:'与视频调取同口径（取每日明细 Q 列平均）；已并入「视频调取量」第三部分，不单独重复计费', date:'2026-09-18'},
+  {name:'SW稽核', city:'西安', rate:'按图', logic:'SW 按每日实际审核图片（SW检查表附件）D 板块 SW.T +5%(变差) +3min 计（180s/图）；每图环节 / 产品不同、不取均值；5S / 安全另按 600s/次。看板直接取每日明细实际耗时 swH2，不乘固定费率；含「张霞霞 / 王妙星当日登记量均 >0 才对半拆」的对半原则', date:'2026-09-18'},
+  {name:'异常邮件跟进', city:'西安', rate:'1', logic:'工艺工时摸底「异常邮件处理」1 分/条；按当日出勤在 张霞霞 / 马红霞 / 杨凡凡 间整数平分（2026-10-25 起口径）；理论耗时 = 异常邮件条数 × 1', date:'2026-09-08'},
+  {name:'工单处理', city:'西安', rate:'43.1', logic:'根据 1-9 月西安仓处理时效与工单总数计算（去掉异常数据）；看板「每人工作量」已预留工单列（gdQ），数据源待接入，暂以 0 计入、不参与理论耗时', date:'2026-09-08'},
+  {name:'消息回复（客诉对接）', city:'四仓', rate:'分仓', logic:'7-9 月各仓群消息「被@→回复」平均响应时长（按实际回复人统计，非被@人）：西安 / 成都 / 天津 15.72、沈阳 17.6；理论耗时 = Σ(每人回复次数 × 所属仓费率)，各仓费率见下表分行', date:'2026-10-13'},
+  {name:'异常处理', city:'四仓', rate:'2', logic:'2026-09 四仓 12,441 条处理时间差（异常上架−异常接收、完成异常−异常下架）中位数 2.0 分；均值 8.6 分受长尾影响，2026-11-10 用户拍板改用中位数；处理量 = newocs 口径A（最后一步处理人归属、该步时间=当天）；理论耗时 = 异常处理量 × 2', date:'2026-11-10'},
+  {name:'上下架', city:'四仓', rate:'0.5', logic:'2026-11-10 用户确认 0.5 分/条（原 9 月摸底 2.8 分/条已停用）；处理量 = newocs 异常库上下架记录按操作人归属；理论耗时 = 上下架量 × 0.5', date:'2026-11-10'},
+  {name:'稽核量', city:'四仓', rate:'5', logic:'占位标准 5 分/条（准确值待工艺确认）；稽核量 = 各仓当日登记量（含无异常）按当日出勤的异常组目标人整数平分；理论耗时 = 稽核量 × 5', date:'2026-11-06'},
+  {name:'外呼', city:'—', rate:'—', logic:'已停用：2026-11-06 起异常处理量统一改用 newocs 口径A（最后一步处理人归属），原「外呼登记分摊」不再单独计量，看板无对应列', date:'2026-11-06'},
 ];
 function renderGongshiTable(){
   const wrap=document.getElementById('gsGongshiTable');
   if(!wrap) return;
-  // 随「有效仓集合」联动：西安=完整工艺工时表；沈阳 / 成都 / 天津 = 各自消息回复费率 + 取退货 / SW 无源数据说明
-  const CS=gsCitySet(), HAS_XA=CS.indexOf('西安')>=0, OTH=CS.filter(c=>c!=='西安');
-  let h='<table><tr><th>工艺名称</th><th>仓</th><th>标准工时<br>(min/次)</th><th>计算逻辑</th><th>更新日期</th></tr>';
-  if(HAS_XA){
-    GS_GONGSHI.forEach(r=>{
-      const rate = r.rate ? '<td class="rate">'+r.rate+'</td>' : '<td class="na">—</td>';
-      const logic = r.logic ? r.logic : '<span class="na">—</span>';
-      const date  = r.date  ? r.date  : '<span class="na">—</span>';
-      h+='<tr><td class="nm">'+r.name+'</td><td>西安</td>'+rate+'<td>'+logic+'</td><td>'+date+'</td></tr>';
-    });
-  }
-  OTH.forEach(c=>{
-    const rate = MSG_RATES[c]||MSG_RATE;
-    h+='<tr><td class="nm">消息回复（客诉对接）</td><td>'+c+'</td><td class="rate">'+rate+'</td>'
-      +'<td>由'+c+' 人员 2026 年 7–9 月群消息（C2B客服&供应链能力中心异常对接群(新)、B2B出货组、供应链能力中心&顾问&异常协作群、C2B供应链能力中心客诉对接）回复平均时长测定（按实际回复人统计，非被@人）</td><td>2026-10-13</td></tr>';
+  const CS=gsCitySet();   // 随「仓联动筛选」联动：总览=所选仓，单仓 tab=该仓
+  let h='<table><tr><th>工艺名称</th><th>适用仓</th><th>标准工时<br>(min/次)</th><th>计算逻辑（含看板中的耗时公式）</th><th>更新日期</th></tr>';
+  GS_GONGSHI.forEach(r=>{
+    // 仅西安适用的工艺：所选仓不含西安时不展示；四仓通用与停用说明始终展示
+    if(r.city!=='—' && r.city!=='四仓' && CS.indexOf(r.city)<0) return;
+    const rate=(r.rate && r.rate!=='—')?'<td class="rate">'+r.rate+'</td>':'<td class="na">—</td>';
+    h+='<tr><td class="nm">'+r.name+'</td><td>'+r.city+'</td>'+rate+'<td>'+r.logic+'</td><td>'+r.date+'</td></tr>';
   });
+  // 各仓消息回复标准工时明细（分仓费率，勿混用）
+  CS.forEach(c=>{
+    h+='<tr><td class="nm">消息回复费率 · '+c+'</td><td>'+c+'</td><td class="rate">'+(MSG_RATES[c]||MSG_RATE)+'</td>'
+      +'<td>该仓 2026 年 7–9 月群消息回复平均响应时长；消息回复理论耗时 = 该仓每人回复次数 × '+(MSG_RATES[c]||MSG_RATE)+' 分/次</td><td>2026-10-13</td></tr>';
+  });
+  // 合计口径写进表格（总览下 hint 被隐藏，计算逻辑仍完整可见）
+  h+='<tr class="tot"><td class="nm">合计口径</td><td>四仓</td><td>—</td>'
+    +'<td><b>理论耗时 = 处理量 × 标准工时</b>；个人总处理量理论耗时 = 消息回复 + SW稽核 + 异常邮件 + 取退货 + 视频调取 + 异常处理 + 上下架 + 稽核量 各项理论耗时之和；核心指标「合计」同口径；日均 UPPH = 总处理量 ÷ 实际出勤工时</td><td>—</td></tr>';
   wrap.innerHTML=h+'</table>';
 }
 // 视频调取明细（仅 9/14、9/15 有数据；其余日期走「无数据」空态但仍显示考勤）
@@ -2347,8 +2355,8 @@ function ovRegAgg(start,end,sel){
     let rows=0, cnt=0;
     for(const d in reg){ if(d<start||d>end) continue;
       (reg[d]||[]).forEach(e=>{
-        const n=e.cnt||0; rows++;                        // 登记条数：全部登记均计
-        byDay[d]=(byDay[d]||0)+1;                        // 当日登记「条数」
+        const n=e.cnt||0; rows+=n;                       // 稽核登记量：按登记数量(cnt)累加（全站统一口径 2026-11-10）
+        byDay[d]=(byDay[d]||0)+n;                        // 当日稽核登记量
         if(isNoExcProb(e.prob)) return;                  // 无异常/空白/未填写/无法关机：不计入失误量
         byDay['_c'+d]=(byDay['_c'+d]||0)+n;             // 当日「失误量」
         cnt+=n;                                          // 失误量合计
@@ -2539,7 +2547,7 @@ function renderOverview(){
     const rank=SEL.slice().sort((a,b)=>A.city[b].miss-A.city[a].miss);
     let h='<div class="lbl">各仓稽核量排列（'+regModeLabel()+'，按失误量降序）</div><table>'
       +'<tr><th class="nm">排名</th><th class="nm">仓</th><th>登记天数</th><th>稽核登记量(条)</th><th>失误量(条)</th><th>无异常量(条)</th><th>失误占比</th>'
-      +'<th>日均登记<span class="thu">条/天</span></th><th>涉及人员</th><th>主要业务分类</th><th>主要失误类型</th><th>问题未填写<span class="thu">次数</span></th></tr>';
+      +'<th>日均稽核登记量<span class="thu">条/天</span></th><th>涉及人员</th><th>主要业务分类</th><th>主要失误类型</th><th>问题未填写<span class="thu">次数</span></th></tr>';
     const topK=(o,n)=>{ const e=Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,n); return e.length?e.map(x=>x[0]+' '+x[1]).join('、'):'—'; };
     rank.forEach((c,i)=>{ const k=R.city[c], a=A.city[c];
       h+='<tr><td class="nm">'+(i+1)+'</td><td class="nm"><b style="color:'+OV_COLOR[c]+'">'+c+'</b></td><td>'+k.days.length+'</td><td>'+fmt(a.tot)+'</td>'
@@ -2549,10 +2557,10 @@ function renderOverview(){
     });
     const _T=A.tot;
     h+='<tr style="background:#eaf0fa"><td class="nm">—</td><td class="nm"><b>合计</b></td><td>'+R.days.length+' 天</td><td><b>'+fmt(_T.tot)+'</b></td><td><b>'+fmt(_T.miss)+'</b></td><td><b>'+fmt(_T.na)+'</b></td><td><b>'+(_T.tot>0?((_T.miss/_T.tot*100).toFixed(1)+'%'):'—')+'</b></td><td>'+ovP1(R.totR/(R.days.length||1))+'</td><td>—</td><td>—</td><td>—</td><td><b>'+fmt(SEL.reduce((a,c)=>a+R.city[c].blank,0))+'</b></td></tr></table>';
-    h+='<div class="hint">「稽核登记量」= 区间内登记条数合计（含无异常）；「失误量」= 失误登记条数合计；「无异常量」= 无异常 / 空白登记条数合计；「失误占比」= 该仓失误量 ÷ 该仓稽核登记量；数据自 2026-09-01 起抓取。</div>';
+    h+='<div class="hint">「稽核登记量」= 区间内登记数量累加（含无异常）；「失误量」= 失误登记条数合计；「无异常量」= 无异常 / 空白登记条数合计；「失误占比」= 该仓失误量 ÷ 该仓稽核登记量；数据自 2026-09-01 起抓取。</div>';
     document.getElementById('ovRegSummary').innerHTML=h;
     const noReg=R.tot===0;
-    // 图 E：各仓每日登记条数
+    // 图 E：各仓每日稽核登记量
     if(!ovRegDayChart) ovRegDayChart=echarts.init(document.getElementById('ovRegDayChart'));
     if(noReg||!R.days.length){ ovRegDayChart.clear(); ovRegDayChart.setOption({title:{text:'当前区间无稽核量数据', left:'center', top:'center', textStyle:{color:'#98a2b3', fontSize:13, fontWeight:'normal'}}, xAxis:{type:'category', data:[]}, yAxis:{type:'value'}, series:[]}, true); }
     else ovRegDayChart.setOption({
@@ -2561,7 +2569,7 @@ function renderOverview(){
       grid:{left:56, right:26, top:44, bottom:R.days.length>14?74:40},
       dataZoom:R.days.length>14?[{type:'inside'},{type:'slider', height:18, bottom:12, brushSelect:false}]:[],
       xAxis:{type:'category', data:R.days, axisLabel:{fontSize:11, hideOverlap:true}},
-      yAxis:{type:'value', name:'登记条数', nameTextStyle:{fontSize:11}},
+      yAxis:{type:'value', name:'稽核登记量', nameTextStyle:{fontSize:11}},
       series:SEL.map(c=>({name:c, type:'bar', stack:'r', barWidth:'62%',
         data:R.days.map(d=>(R.city[c].byDay[d]||0)), itemStyle:{color:OV_COLOR[c]}}))
     }, true);
@@ -2571,7 +2579,7 @@ function renderOverview(){
     else ovRegPieChart.setOption({
       tooltip:{trigger:'item', formatter:'{b}<br/>{c} 次（{d}%）'},
       legend:{bottom:2, textStyle:{fontSize:12}},
-      title:{text:'失误量占比', left:'center', top:6, textStyle:{fontSize:13, color:'#5a6b85', fontWeight:'normal'}},
+      title:{text:'失误量构成（占四仓总失误量）', left:'center', top:6, textStyle:{fontSize:13, color:'#5a6b85', fontWeight:'normal'}},
       series:[{type:'pie', radius:['38%','62%'], center:['50%','52%'], avoidLabelOverlap:true,
         data:rank.map(c=>({name:c, value:R.city[c].cnt, itemStyle:{color:OV_COLOR[c]}})),
         label:{formatter:'{b}\n{d}%', fontSize:12}, labelLine:{length:12, length2:10}}]
@@ -2607,46 +2615,7 @@ function renderOverview(){
           label:{show:true, position:'right', fontSize:11, formatter:p=>fmt(p.value)}}]
       }, true);
     }
-    // 每日明细表
-    (function(){
-      const w=document.getElementById('ovRegDaily'); if(!w) return;
-      if(!R.days.length){ w.innerHTML='<div class="hint">'+regModeLabel()+' 无稽核量登记数据。</div>'; return; }
-      const rows=R.days.slice().reverse(); const LIM=80;
-      let h='<div class="lbl" style="margin-top:12px">各仓每日登记明细（日期倒序'+(rows.length>LIM?('，显示最近 '+LIM+' 天'):'')+'）</div>';
-      h+='<div id="ovRegDailyChart" style="width:100%;height:300px;margin:8px 0 10px"></div>';
-      h+='<table><tr><th class="nm">日期</th>'+SEL.map(c=>'<th>'+c+'<span class="thu">条 / 次</span></th>').join('')+'<th>合计条数</th><th>合计失误量</th></tr>';
-      rows.slice(0,LIM).forEach(d=>{
-        let sr=0, sc=0;
-        const tds=SEL.map(c=>{ const a=R.city[c].byDay[d]||0, b=R.city[c].byDay['_c'+d]||0; sr+=a; sc+=b;
-          return '<td>'+(a?('<b>'+a+'</b> / '+b):'<span style="color:#9aa0a6">—</span>')+'</td>'; }).join('');
-        h+='<tr><td class="nm">'+d+'</td>'+tds+'<td><b>'+sr+'</b></td><td><b>'+sc+'</b></td></tr>';
-      });
-      h+='</table>'+'<div class="hint">每仓单元格为「登记条数 / 失误量（次）」；合计为当日'+OV_TOT2+'汇总。</div>';
-      w.innerHTML=h;
-      // 分析图：各仓每日失误量折线 + 合计登记条数柱（随所选仓与区间联动）
-      try{
-        const el=document.getElementById('ovRegDailyChart');
-        if(el && window.echarts){
-          const ins=echarts.getInstanceByDom(el)||echarts.init(el);
-          const ds=R.days.slice();                                   // 日期正序
-          const ser=SEL.map(c=>({name:c+' 失误量', type:'line', smooth:true, symbol:'circle', symbolSize:5,
-            itemStyle:{color:OV_COLOR[c]}, lineStyle:{width:2.2},
-            data:ds.map(d=>R.city[c].byDay['_c'+d]||0)}));
-          ser.push({name:'合计登记条数', type:'bar', barWidth:'42%', itemStyle:{color:'#dbe4f5',borderRadius:[3,3,0,0]},
-            data:ds.map(d=>SEL.reduce((a,c)=>a+(R.city[c].byDay[d]||0),0))});
-          ins.setOption({
-            tooltip:{trigger:'axis', axisPointer:{type:'shadow'}},
-            legend:{top:2, type:'scroll', textStyle:{fontSize:11}},
-            grid:{left:52, right:22, top:40, bottom:(ds.length>14?62:34)},
-            xAxis:{type:'category', data:ds.map(d=>d.slice(5)), axisLabel:{fontSize:11, hideOverlap:true}},
-            yAxis:{type:'value', name:'次 / 条', nameTextStyle:{fontSize:11}},
-            series:ser,
-            dataZoom: ds.length>14 ? [{type:'slider', height:16, bottom:16, start:Math.max(0,100-Math.round(1400/ds.length)), end:100}] : []
-          }, true);
-          ins.resize();
-        }
-      }catch(e){}
-    })();
+    // 2026-11-10 用户指示：删除「每日登记 / 失误量矩阵」趋势明细表及其折线图（保留 4 张分析图与文字分析）
     // 文字分析 + 改善建议
     const t=[];
     if(noReg){ t.push('<span class="ov-h">数据提示</span>'+(SEL.length?(regModeLabel()+' '+OV_TOT2+'均无稽核量登记数据。'):'当前<b>未选择任何仓</b> —— 请在上方「仓联动筛选」中选择仓（可多选）后查看稽核量分析。')); }
@@ -2656,12 +2625,14 @@ function renderOverview(){
       const pe=Object.entries(R.allProb).sort((a,b)=>b[1]-a[1]).slice(0,5);
       const peak=(function(){ let bd='',bv=-1; R.days.forEach(d=>{ let s=0; SEL.forEach(c=>{ s+=R.city[c].byDay['_c'+d]||0; }); if(s>bv){bv=s;bd=d;} }); return [bd,bv]; })();
       const blankAll=SEL.reduce((a,c)=>a+R.city[c].blank,0);
-      t.push('<span class="ov-h">① 登记量与占比</span>');
-      t.push('<ul><li>'+regModeLabel()+' '+OV_TOT2+'共登记 <b>'+fmt(R.totR)+'</b> 条、失误量合计 <b>'+fmt(R.tot)+'</b> 次，覆盖 '+R.days.length+' 个登记日。</li>'
-        +'<li>排列：'+rank.map((c,i)=>'<span class="tag">'+(i+1)+'. '+c+' '+fmt(R.city[c].cnt)+' 次 · '+ovP1(R.city[c].pctAll)+'%</span>').join('')
-        +'</li><li><b>'+top+'</b> 一家占 <b>'+ovP1(R.city[top].pctAll)+'%</b>，日均登记 <b>'+ovP1(R.city[top].perDay)+'</b> 条、涉及 <b>'+R.city[top].whoN+'</b> 人，是本周期失误治理的绝对重点；其余三仓为偶发登记，建议保持周度复盘即可。</li></ul>');
+      t.push('<span class="ov-h">① 稽核登记量与仓内失误占比</span>');
+      // 2026-11-10 全站统一口径：稽核登记量 / 失误量 / 无异常量取 regCityAgg（与合并表同源），失误占比 = 该仓失误量 ÷ 该仓稽核登记量
+      const _pctIn=(c)=>A.city[c].tot>0?(A.city[c].miss/A.city[c].tot*100):0;
+      t.push('<ul><li>'+regModeLabel()+' '+OV_TOT2+'稽核登记量 <b>'+fmt(A.tot.tot)+'</b> 条（失误 <b>'+fmt(A.tot.miss)+'</b> 条、无异常 <b>'+fmt(A.tot.na)+'</b> 条），覆盖 '+R.days.length+' 个登记日。</li>'
+        +'<li>各仓失误量 / 仓内失误占比：'+rank.map((c,i)=>'<span class="tag">'+(i+1)+'. '+c+' '+fmt(A.city[c].miss)+' 条 · '+ovP1(_pctIn(c))+'%</span>').join('')
+        +'</li><li><b>'+top+'</b> 失误量最高，仓内失误占比 <b>'+ovP1(_pctIn(top))+'%</b>，日均稽核登记量 <b>'+ovP1(R.city[top].perDay)+'</b> 条、涉及 <b>'+R.city[top].whoN+'</b> 人，是本周期失误治理的绝对重点；其余三仓为偶发登记，建议保持周度复盘即可。</li></ul>');
       t.push('<span class="ov-h">② 每日节奏</span>');
-      t.push('<ul><li>峰值日 <b>'+peak[0]+'</b>，单日失误量 <b>'+fmt(peak[1])+'</b> 次；'+OV_TOT2+'日均登记 '+ovP1(R.totR/(R.days.length||1))+' 条。</li>'
+      t.push('<ul><li>峰值日 <b>'+peak[0]+'</b>，单日失误量 <b>'+fmt(peak[1])+'</b> 次；'+OV_TOT2+'日均稽核登记量 '+ovP1(A.tot.tot/(R.days.length||1))+' 条。</li>'
         +'<li>各仓登记天数：'+SEL.map(c=>'<span class="tag">'+c+' '+R.city[c].days.length+' 天</span>').join('')+'，登记连续性差异较大（部分仓为抽查式登记，需确认漏登）。</li></ul>');
       t.push('<span class="ov-h">③ 失误类型分布</span>');
       t.push('<ul><li>'+te.slice(0,5).map(x=>'<span class="tag">'+x[0]+' '+fmt(x[1])+' 次 · '+ovP1(x[1]/R.tot*100)+'%</span>').join('')+'</li>'
@@ -2857,7 +2828,7 @@ function renderOverview(){
     }
     txtEl.innerHTML=t.join('');
   })();
-  ['ovMsgQtyChart','ovMsgPieChart','ovMsgPersonChart','ovMsgRateChart','ovRegDayChart','ovRegPieChart','ovRegTypeChart','ovRegProbChart','ovRegDailyChart','ovAttPersonChart','ovAttCityChart','ovAttUpphChart']
+  ['ovMsgQtyChart','ovMsgPieChart','ovMsgPersonChart','ovMsgRateChart','ovRegDayChart','ovRegPieChart','ovRegTypeChart','ovRegProbChart','ovAttPersonChart','ovAttCityChart','ovAttUpphChart']
     .forEach(id=>{ const el=document.getElementById(id); if(el && el.clientWidth>0){ const ins=echarts.getInstanceByDom(el); if(ins) ins.resize(); } });
 }
 // 总览「仓联动筛选」：按仓名称多选 → 整体联动总表 / 消息回复 / 流转失误三大区块
