@@ -373,6 +373,21 @@ td.c-orange{color:#f2994a;font-weight:600}
     <div id="ovAttText" class="ov-text"></div>
   </div>
 
+  <!-- 消息回复 · 数量分布与理论耗时：2026-11-10 用户要求从总览末尾移到「异常处理量」板块之前，仅总览显示 -->
+  <div id="ovMsgSection" style="display:none">
+    <div class="sec-title">消息回复 · 数量分布与理论耗时</div>
+    <div id="ovMsgSummary"></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <div class="chart" id="ovMsgQtyChart" style="height:330px;flex:1 1 460px;min-width:330px"></div>
+      <div class="chart" id="ovMsgPieChart" style="height:330px;flex:1 1 320px;min-width:300px"></div>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px">
+      <div class="chart" id="ovMsgPersonChart" style="height:520px;flex:1 1 460px;min-width:330px"></div>
+      <div class="chart" id="ovMsgRateChart" style="height:520px;flex:1 1 320px;min-width:300px"></div>
+    </div>
+    <div id="ovMsgText" class="ov-text"></div>
+  </div>
+
     <!-- 异常处理量（newocs 异常单管理 · 按异常类型 · 各仓独立展示） -->
   <div class="m-video" id="secException">
     <div class="sec-title">📊 异常处理量<span id="excRangeLbl" style="display:none"></span></div>
@@ -457,18 +472,7 @@ td.c-orange{color:#f2994a;font-weight:600}
     <div class="hint">汇总 西安 / 沈阳 / 成都 / 天津 全部 26 名成员，按当前区间统计四仓同源可比口径：消息回复（按实际回复人）与稽核量（分仓登记，取自 wiki）。取退货 / SW 稽核 / 视频调取 / 异常邮件 目前仅西安有完整源数据，不在本表强行并列。</div>
     <div id="ovAllTable"></div>
 
-    <div class="sec-title">消息回复 · 数量分布与理论耗时</div>
-    <div id="ovMsgSummary"></div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <div class="chart" id="ovMsgQtyChart" style="height:330px;flex:1 1 460px;min-width:330px"></div>
-      <div class="chart" id="ovMsgPieChart" style="height:330px;flex:1 1 320px;min-width:300px"></div>
-    </div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px">
-      <div class="chart" id="ovMsgPersonChart" style="height:520px;flex:1 1 460px;min-width:330px"></div>
-      <div class="chart" id="ovMsgRateChart" style="height:520px;flex:1 1 320px;min-width:300px"></div>
-    </div>
-    <div id="ovMsgText" class="ov-text"></div>
-    <!-- 四仓人均出勤时长对比分析已移到 #ovAttSection（仅总览显示） -->
+    <!-- 消息回复专题已移到「异常处理量」之前（#ovMsgSection，2026-11-10 用户要求） -->
   </div>
 
 </div>
@@ -2923,7 +2927,7 @@ function gsHighlightWh(wh){
     // 独立「工艺工时参考」看板：ref-mode CSS 隐藏主面板其它所有板块，只留 #secGongshi
     gsIsOverview=false; gsWhFilter='all';
     document.body.classList.remove('ov-clean');
-    ['overviewSection','cityCmpSection','ovRegAnalysisSection','ovAttSection','legacyChartsSection','legacyRegSection','ovWhField'].forEach(id=>_secD(id,false));
+    ['overviewSection','ovMsgSection','cityCmpSection','ovRegAnalysisSection','ovAttSection','legacyChartsSection','legacyRegSection','ovWhField'].forEach(id=>_secD(id,false));
     _secD('secGongshi', true);
     renderGongshiTable();       // gsCitySet() 在 ref 模式返回四仓 → 全部工艺行都显示
     if(window.ovCloseCitySel) ovCloseCitySel();
@@ -2937,6 +2941,7 @@ function gsHighlightWh(wh){
   _secD('cityCmpSection', gsIsOverview);      // 「各仓处理量/处理时长/出勤时长对比」仅总览(仓数据分析) tab 显示
   _secD('ovRegAnalysisSection', gsIsOverview); // 「仓稽核量」已改名并挪到异常处理量之前，仅总览显示
   _secD('ovAttSection', gsIsOverview);         // 「四仓人均出勤时长对比分析」仅总览显示
+  _secD('ovMsgSection', gsIsOverview);         // 「消息回复 · 数量分布与理论耗时」已挪到异常处理量之前，仅总览显示
   _secD('legacyRegSection', !gsIsOverview);    // 原「稽核量」板块：2026-11-10 总览删除，单仓 tab 保留每日明细
   _secD('legacyChartsSection', !gsIsOverview); // 总览已删除「每人工作量对比 / 趋势分析① / 趋势分析②」；单仓 tab 保留
   _secD('secGongshi', false);                  // 工艺工时已移出仓数据分析 tab
