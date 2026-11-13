@@ -614,8 +614,14 @@ function gsDayTotals(d){
 function gsRangeDays(){ return GS_DATES.filter(d=>d>=gsRngStartPicker.value && d<=gsRngEndPicker.value); }
 // ---------- newocs 历史聚合（EXC_NEWOC / EXC_SHELF 双结构兼容：{dates:{date:{oc:...}}} 或旧版单日 {date,data}） ----------
 const CITY_OC_MAP = {'西安':'577','天津':'5','成都':'3','沈阳':'3413'};
-const JZ_TARGETS = {'西安':['张霞霞','杨凡凡','马红霞'],'天津':['李婷','罗振','王俊双','王彤','张红楠'],
-                    '成都':['黄语文','李敏','徐巧萍'],'沈阳':['杨曦','张希珍']};   // 各仓异常组目标人（稽核量分摊对象）
+// 2026-11-13 用户口径：每人工作量表「稽核量」列数值 = 稽核量板块的「稽核登记量」（REG_DATA 当日 cnt 合计，含无异常登记）。
+//   各仓分摊对象（均两人）：天津 王远 / 王心月（看板名单为「王心月」）；成都 李敏 / 黄语文；沈阳 张希珍 / 杨曦。
+//   当日两人均出勤 → 整数平分（余数按日期播种随机给其中一人，保证两人合计 = 当日登记量，无小数）；
+//   当日仅一人出勤 → 全量给该出勤人（三仓均适用）；两人均不出勤 → 当日 0。
+//   西安暂不设分摊对象 → 稽核量列全部归 0。
+//   整数原则与「异常处理量 / 异常邮件」旧分摊同源：base=Math.floor(总量/出勤人数)，余数按日期播种随机洗牌后前 rem 人各 +1。
+//   「稽核量板块」各表的稽核登记量仍直接取 REG_DATA，不受此分摊规则影响。
+const JZ_TARGETS = {'天津':['王远','王心月'],'成都':['李敏','黄语文'],'沈阳':['张希珍','杨曦']};   // 西安无分摊对象 → jzQ 恒为 0
 function _newocDatesOf(D){
   if(D && D.dates) return D.dates;
   if(D && D.date && D.data){ const o={}; o[D.date]=D.data; return o; }
@@ -641,18 +647,20 @@ function _aggOcDays(daysByDate, start, end){
   }
   return out;
 }
-// 稽核量（原流转失误）按人：各仓当日「登记量」（全部登记均计，含无异常）分摊到当日出勤的异常组目标人
-// （整数平分，余数按日期播种随机；与异常处理量旧分摊规则同源）
+// 稽核量按人（2026-11-13 口径）：数值 = 稽核量板块「稽核登记量」(REG_DATA 当日 cnt 合计，含无异常登记)
+// 按仓分摊到 JZ_TARGETS 该仓两人中当日出勤者：两人出勤整数平分（余数按日期播种随机）、仅一人出勤全量给该人、均不出勤当日 0。
+// 西安未配置分摊对象 → 稽核量列全部归 0。整数原则与异常邮件 / 异常处理量旧分摊同源（无小数，合计守恒）。
 function jzPerCalc(start, end){
   const out={}; Object.keys(JZ_TARGETS).forEach(c=>JZ_TARGETS[c].forEach(p=>out[p]=0));
   rngDaysSrc(start,end).forEach(d=>{
     for(const city in REG_DATA){
+      const tg=JZ_TARGETS[city]; if(!tg || !tg.length) continue;   // 西安：无分摊对象 → 稽核量列归 0
       const lst=(REG_DATA[city]||{})[d]; if(!lst || !lst.length) continue;
-      let dayTot=0; lst.forEach(r=>{ dayTot+=(r.cnt||1); });   // 稽核量列 = 当日登记量（含无异常，全部登记均计）
+      let dayTot=0; lst.forEach(r=>{ dayTot+=(r.cnt||0); });   // 与稽核量板块「稽核登记量」同口径（regRows 的 cnt 累加）
       if(dayTot<=0) continue;
-      const on=(JZ_TARGETS[city]||[]).filter(p=>attRawEff(d,p));
-      if(!on.length) continue;
-      const base=Math.floor(dayTot/on.length);
+      const on=tg.filter(p=>attRawEff(d,p));
+      if(!on.length) continue;                  // 两人均不出勤 → 当日不计
+      const base=Math.floor(dayTot/on.length); // 一人在勤时 base=dayTot、rem=0 → 全量给该人
       const rem=dayTot-base*on.length;
       let seed=0; for(let i=0;i<d.length;i++){ seed=(seed*131+(d.charCodeAt(i)||0))>>>0; }
       const rng=mulberry32(seed);
@@ -802,7 +810,7 @@ function renderGongshi(){
   // 上下架处理量（newocs 异常库上下架记录，操作人归属，区间累计）
   const _shelfAgg = _aggOcDays(_newocDatesOf(window.EXC_SHELF), start, end);
   const shelfPer = {}; _emps.forEach(p=>{ const oc=CITY_OC_MAP[WAREHOUSE[p]]; shelfPer[p]=((_shelfAgg[oc]||{}).per||{})[p]||0; });
-  // 稽核量（原流转失误）：各仓当日登记量分摊到当日出勤的异常组目标人
+  // 稽核量：2026-11-13 起天津/成都/沈阳 各按当日出勤整数平分给两人（一人出勤全量给该人），西安归 0
   const jzPer = jzPerCalc(start, end);
   function buildPersonRows(people){
     return people.map(p=>{
@@ -822,7 +830,7 @@ function renderGongshi(){
     const vidVal = vid;
     const excQ = Math.round(excPer[p]||0);   // 异常处理量（newocs 口径A 实际值）
     const shelfQ = Math.round(shelfPer[p]||0);   // 上下架处理量（newocs 操作人归属）
-    const jzQ = Math.round(jzPer[p]||0);         // 稽核量（原流转失误，按出勤分摊）
+    const jzQ = Math.round(jzPer[p]||0);         // 稽核量（稽核登记量，按仓两人出勤整数平分；一人出勤全量给该人；西安 0）
     const gdQ = 0;                               // 工单处理量（数据源待定，占位空列）
     const perTot = a+b+c+vidVal+mailQ+excQ+shelfQ+jzQ+gdQ;
     // 取退货 / 视频调取 理论耗时（标准工时：取退货 4.5 分/件、视频调取 6.05 分/个）；上下架 0.5 分/条、稽核量 5 分/条（占位标准）
@@ -861,7 +869,7 @@ function renderGongshi(){
     {k:'excQ',  h:'异常处理量<span class="thu">(单·newocs口径A)</span>', f:r=>fmt(r.excQ), n:'异常处理量'},
     {k:'shelfQ',h:'上下架处理量<span class="thu">(条)</span>',          f:r=>fmt(r.shelfQ),    n:'上下架处理量'},
     {k:'gdQ',   h:'工单处理量<span class="thu">(单·待接数据)</span>',   f:r=>fmt(r.gdQ),       n:'工单处理量', force:true},
-    {k:'jzQ',   h:'稽核量<span class="thu">(条·登记·出勤分摊)</span>',  f:r=>fmt(r.jzQ),       n:'稽核量（登记量，按当日出勤目标人分摊）', force:true}
+    {k:'jzQ',   h:'稽核量<span class="thu">(条·登记量·出勤整数平分)</span>',  f:r=>fmt(r.jzQ),       n:'稽核量（稽核登记量：天津 王远/王心月、成都 李敏/黄语文、沈阳 张希珍/杨曦 按当日出勤整数平分；一人出勤全量给该人；西安暂归 0）', force:true}
   ];
   const COLS_B=[
     {k:'tuihuoTheo', h:'取退货理论耗时<span class="thu">(分)</span>',   f:r=>r.tuihuoTheo.toFixed(1), n:'取退货 4.5 分/件'},
@@ -872,7 +880,7 @@ function renderGongshi(){
     {k:'excH',       h:'异常处理理论耗时<span class="thu">(分)</span>', f:r=>r.excH.toFixed(1),          n:'异常处理 2 分/单（9月四仓实测中位数）'},
     {k:'shelfTheo',  h:'上下架理论耗时<span class="thu">(分)</span>',   f:r=>r.shelfTheo.toFixed(1),  n:'上下架 0.5 分/条'},
     {k:'gdTheo',     h:'工单理论耗时<span class="thu">(分)</span>',     f:r=>'\u2014',                n:'工单处理量（数据源待定）', force:true},
-    {k:'jzTheo',     h:'稽核量理论耗时<span class="thu">(分)</span>',   f:r=>r.jzTheo.toFixed(1),     n:'稽核量（登记量）5 分/条（占位标准）', force:true}
+    {k:'jzTheo',     h:'稽核量理论耗时<span class="thu">(分)</span>',   f:r=>r.jzTheo.toFixed(1),     n:'稽核量（稽核登记量）5 分/条（占位标准）', force:true}
   ];
   const ca=COLS_A.filter(c=> c.force || !_zeroCol(c.k)), cb=COLS_B.filter(c=> c.force || !_zeroCol(c.k));
   const hidA=COLS_A.filter(c=> !c.force && _zeroCol(c.k)).map(c=>c.n), hidB=COLS_B.filter(c=> !c.force && _zeroCol(c.k)).map(c=>c.n);
@@ -888,7 +896,7 @@ function renderGongshi(){
       +'<td>'+fmt(r.perTot)+'</td><td>'+r.attHrs.toFixed(1)+'</td><td class="c-blue"><b>'+r.upph.toFixed(2)+'</b></td></tr>';
   });
   htmlA+='</table>';
-  htmlA+='<div class="hint" style="margin-top:6px">个人总处理量 = 取退货合计 + 消息回复合计 + SW稽核合计 + 视频调取量 + 异常邮件跟进 + 异常处理量 + 上下架处理量 + 稽核量 + 工单处理量；视频调取量为区间内各视频日（Part2 标准作业审核表 + 群视频 Part3 + 西安流转专项视频按目标2人「王妙星、张霞霞」当日出勤整数分摊）按人累计，与核心指标「视频调取」口径完全一致、随区间筛选联动；<b>异常处理量自 2026-11-06 起四仓统一为 newocs 口径A实际值</b>（每人每天最后一步处理人归属、该步时间=当天，区间累计；此前西安为外呼登记按出勤分摊、其余三仓为 0，历史数值不再回改）；上下架处理量 = newocs 异常库「上下架记录查询」按操作人归属（区间累计）；稽核量 = 原「流转失误」当日登记量（含无异常登记，全部登记均计）按各仓当日出勤的异常组目标人整数平分（余数按日期播种随机）；工单处理量数据源待接，暂为空列占位。UPPH = 个人总处理量 ÷ 区间「实际出勤工时」；实际出勤工时 = 区间内每个出勤日的打卡出勤时长之和（取飞书「考勤明细」AY 列，2026-09-01 起为真实打卡值；该日无打卡记录时按 8 小时/天回退，保证与历史口径连续；<b>自 2026-10-20 起缺考勤明细的日期，全部按默认出勤 8H 计入分母</b>）。'+hidNote('分项量',hidA)+'</div>';
+  htmlA+='<div class="hint" style="margin-top:6px">个人总处理量 = 取退货合计 + 消息回复合计 + SW稽核合计 + 视频调取量 + 异常邮件跟进 + 异常处理量 + 上下架处理量 + 稽核量 + 工单处理量；视频调取量为区间内各视频日（Part2 标准作业审核表 + 群视频 Part3 + 西安流转专项视频按目标2人「王妙星、张霞霞」当日出勤整数分摊）按人累计，与核心指标「视频调取」口径完全一致、随区间筛选联动；<b>异常处理量自 2026-11-06 起四仓统一为 newocs 口径A实际值</b>（每人每天最后一步处理人归属、该步时间=当天，区间累计；此前西安为外呼登记按出勤分摊、其余三仓为 0，历史数值不再回改）；上下架处理量 = newocs 异常库「上下架记录查询」按操作人归属（区间累计）；<b>稽核量自 2026-11-13 起</b>：数值取「稽核量板块」的稽核登记量（当日登记 cnt 合计，含无异常），天津 王远 / 王心月、成都 李敏 / 黄语文、沈阳 张希珍 / 杨曦 各按当日出勤在两人间整数平分（余数按日期播种随机，无小数、两人合计=当日登记量），仅一人出勤则全量给该出勤人（三仓均适用），两人均不出勤当日 0；西安 的稽核量列暂时全部归 0；工单处理量数据源待接，暂为空列占位。UPPH = 个人总处理量 ÷ 区间「实际出勤工时」；实际出勤工时 = 区间内每个出勤日的打卡出勤时长之和（取飞书「考勤明细」AY 列，2026-09-01 起为真实打卡值；该日无打卡记录时按 8 小时/天回退，保证与历史口径连续；<b>自 2026-10-20 起缺考勤明细的日期，全部按默认出勤 8H 计入分母</b>）。'+hidNote('分项量',hidA)+'</div>';
   // 表B：处理的理论耗时（区间累计）
   let htmlB='<div class="lbl" style="margin:12px 0 4px">处理的理论耗时</div><table><tr><th class="nm">姓名</th><th>仓</th>'
     + cb.map(c=>'<th>'+c.h+'</th>').join('')
@@ -1040,7 +1048,7 @@ const GS_GONGSHI = [
   {name:'消息回复（客诉对接）', city:'四仓', rate:'16.19', logic:'7-9 月四仓群消息「被@→回复」平均响应时长（按实际回复人统计，非被@人）：西安 / 成都 / 天津 15.72、沈阳 17.6；2026-11-10 四仓合并为统一标准工时 = (15.72 + 17.6 + 15.72 + 15.72) ÷ 4 = <b>16.19 分/次</b>（原 4 条各仓费率明细行已删除）；看板理论耗时 = Σ(每人回复次数 × 所属仓实测费率)', date:'2026-11-10'},
   {name:'异常处理', city:'四仓', rate:'2', logic:'2026-09 四仓 12,441 条处理时间差（异常上架−异常接收、完成异常−异常下架）中位数 2.0 分；均值 8.6 分受长尾影响，2026-11-10 用户拍板改用中位数；处理量 = newocs 口径A（最后一步处理人归属、该步时间=当天）；理论耗时 = 异常处理量 × 2', date:'2026-11-10'},
   {name:'上下架', city:'四仓', rate:'0.5', logic:'处理量 = newocs 异常库上下架记录按操作人归属；理论耗时 = 上下架量 × 0.5', date:'2026-11-10'},
-  {name:'稽核量', city:'四仓', rate:'5', logic:'占位标准 5 分/条（准确值待工艺确认）；稽核量 = 各仓当日登记量（含无异常）按当日出勤的异常组目标人整数平分；理论耗时 = 稽核量 × 5', date:'2026-11-06'},
+  {name:'稽核量', city:'四仓', rate:'5', logic:'占位标准 5 分/条（准确值待工艺确认）；稽核量 = 稽核量板块的稽核登记量（当日登记 cnt 合计），2026-11-13 起按仓两人按当日出勤整数平分（整数原则：floor 平分 + 余数按日期播种随机，仅一人出勤则全量给该出勤人）：天津 王远 / 王心月、成都 李敏 / 黄语文、沈阳 张希珍 / 杨曦；西安 暂时归 0；理论耗时 = 稽核量 × 5', date:'2026-11-06'},
   {name:'外呼', city:'—', rate:'—', logic:'—', date:'2026-11-06'},
 ];
 function renderGongshiTable(){
