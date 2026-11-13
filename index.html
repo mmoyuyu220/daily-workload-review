@@ -300,7 +300,7 @@ td.c-orange{color:#f2994a;font-weight:600}
     </div>
     <div class="fp-quick"><span>区间快速选择：</span><button type="button" data-range="all">全部</button><button type="button" data-range="7">近7天</button><button type="button" data-range="3" class="active">近3天</button></div>
     <div class="fp-note" id="gongshiNote"></div>
-    <div class="fp-note">区间口径：取退货 / 消息对接 / SW稽核 / 视频调取 / 考勤 · 数据更新逻辑 T-1（核算起始 2026-09-14）；核心「视频调取量」与每人表「视频调取量」均为区间内各视频日（part2per + 群视频 Part3 + 西安流转专项视频按出勤分摊至王妙星/张霞霞）按人累计，口径完全一致、随区间筛选联动；视频调取量 = 区间内各视频日（①视频调取主体·Base标准作业审核表 + ②群视频·飞书群 + ③西安流转专项·wiki）三部分合计，按人累计，随区间筛选联动；视频数据自 2026-09-14 起每日 T-1 自动刷新。</div>
+    <div class="fp-note">区间口径：取退货 / 消息对接 / SW稽核 / 视频调取 / 考勤 · 数据更新逻辑 T-1（核算起始 2026-09-14）；核心「视频调取量」与每人表「视频调取量」均为区间内各视频日（①视频调取主体·Base标准作业审核表 part2per + ②群视频·飞书群 Part3）按人累计，口径完全一致、随区间筛选联动；2026-11-13 起③西安流转专项·wiki 不再并入视频调取量，改归「稽核量」列（按出勤分摊至王妙星/张霞霞、按稽核量占位标准 5 分/条计耗时）；视频数据自 2026-09-14 起每日 T-1 自动刷新。</div>
   </div>
 
   <!-- 区间汇总卡片（随上方「筛选条件」联动：每日处理量 / 日均UPPH / 理论耗时 / 日均出勤人数） -->
@@ -320,7 +320,7 @@ td.c-orange{color:#f2994a;font-weight:600}
     <tr id="gsRowTq"><td class="nm">取退货</td><td id="gsTqQty">—</td><td id="gsTqHours">—</td></tr>
     <tr id="gsRowMsg"><td class="nm">消息回复</td><td id="gsMsgQty">—</td><td id="gsMsgHours">—</td></tr>
     <tr id="gsRowSw"><td class="nm">SW稽核</td><td id="gsSwQty">—</td><td id="gsSwHours">—</td></tr>
-    <tr id="gsRowVid"><td class="nm">视频调取<span class="thu">（含群视频·流转专项）</span></td><td id="gsVidQty">—</td><td id="gsVidHours">—</td></tr>
+    <tr id="gsRowVid"><td class="nm">视频调取<span class="thu">（主体·群视频）</span></td><td id="gsVidQty">—</td><td id="gsVidHours">—</td></tr>
     <tr id="gsRowMail"><td class="nm">异常邮件跟进</td><td id="gsMailQty">—</td><td id="gsMailHours">—</td></tr>
     <tr id="gsRowExc"><td class="nm">异常处理量</td><td id="gsExcQty">—</td><td id="gsExcHours">—</td></tr>
     <tr id="gsRowShelf"><td class="nm">上下架量</td><td id="gsShelfQty">—</td><td id="gsShelfHours">—</td></tr>
@@ -339,7 +339,7 @@ td.c-orange{color:#f2994a;font-weight:600}
 
   <div id="cityCmpSection" style="display:none">
   <div class="sec-title" style="margin-top:16px">仓主要处理量分析</div>
-  <div class="hint">四仓<b>共同有</b>的四项数据横向对比，随上方「筛选条件」区间与「仓联动筛选」所选仓实时联动（选哪几个仓就对比哪几个仓）。异常处理量 / 上下架量 / 稽核量 / 出勤时长四项数量均<b>按人汇总到所属仓</b>（与「每人工作量」表口径完全一致：异常处理量=newocs 口径A、上下架量=操作人归属、稽核量=登记量按当日出勤分摊、出勤时长=实际打卡工时之和），个人数量保持独立不混淆。表格附四仓合计行；下方两张图分别为「三项处理量对比」与「出勤时长对比」。</div>
+  <div class="hint">四仓<b>共同有</b>的四项数据横向对比，随上方「筛选条件」区间与「仓联动筛选」所选仓实时联动（选哪几个仓就对比哪几个仓）。异常处理量 / 上下架量 / 稽核量 / 出勤时长四项数量均<b>按人汇总到所属仓</b>（与「每人工作量」表口径完全一致：异常处理量=newocs 口径A、上下架量=操作人归属、稽核量=天津/成都/沈阳登记量按出勤分摊、西安=③流转专项视频、出勤时长=实际打卡工时之和），个人数量保持独立不混淆。表格附四仓合计行；下方两张图分别为「三项处理量对比」与「出勤时长对比」。</div>
   <div id="cityCmpTable"></div>
   <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">
     <div class="chart" id="cityCmpQtyChart" style="height:340px;flex:1 1 420px;min-width:320px"></div>
@@ -444,7 +444,7 @@ td.c-orange{color:#f2994a;font-weight:600}
        单仓 tab 仍保留，故不物理删除 DOM，仅在总览隐藏（legacyChartsSection）。 -->
   <div id="legacyChartsSection">
   <div class="sec-title" style="margin-top:14px">每人工作量对比</div>
-  <div class="hint">区间累计：取退货 / 消息回复 / SW稽核 / 视频调取量 / 异常邮件跟进 均为所选区间合计（视频调取量 = 区间内各视频日 Part2+群视频 Part3+西安流转专项视频按人累计，与表格、核心指标口径一致，随区间筛选联动）。</div>
+  <div class="hint">区间累计：取退货 / 消息回复 / SW稽核 / 视频调取量 / 异常邮件跟进 均为所选区间合计（视频调取量 = 区间内各视频日 ①Part2 主体 + ②群视频 Part3 按人累计；2026-11-13 起③西安流转专项视频已改归「稽核量」列，与表格、核心指标口径一致，随区间筛选联动）。</div>
   <div class="chart" id="perChart" style="height:340px"></div>
 
   <div class="sec-title">趋势分析 ① 数量 &amp; 总处理量</div>
@@ -469,7 +469,7 @@ td.c-orange{color:#f2994a;font-weight:600}
       <span class="hint" id="ovCityHint" style="margin:0">按仓名称筛选（可多选）：默认不选，点哪个仓就加哪个仓；下方全员总表、消息回复分析、稽核量分析整体联动；点「全部四仓」恢复全量。</span>
     </div>
     <div id="ovEmptyTip" class="ov-empty" style="display:none">当前<b>未选择任何仓</b> —— 请点击上方「仓联动筛选」下拉或本行仓名按钮选择（可多选），或点「全部四仓」查看四仓合计。</div>
-    <div class="hint">汇总 西安 / 沈阳 / 成都 / 天津 全部 26 名成员，按当前区间统计四仓同源可比口径：消息回复（按实际回复人）与稽核量（分仓登记，取自 wiki）。取退货 / SW 稽核 / 视频调取 / 异常邮件 目前仅西安有完整源数据，不在本表强行并列。</div>
+    <div class="hint">汇总 西安 / 沈阳 / 成都 / 天津 全部 26 名成员，按当前区间统计四仓同源可比口径：消息回复（按实际回复人）与稽核量（天津/成都/沈阳=分仓登记取自 wiki，西安=③流转专项视频）。取退货 / SW 稽核 / 视频调取 / 异常邮件 目前仅西安有完整源数据，不在本表强行并列。</div>
     <div id="ovAllTable"></div>
 
     <!-- 消息回复专题已移到「异常处理量」之前（#ovMsgSection，2026-11-10 用户要求） -->
@@ -614,14 +614,15 @@ function gsDayTotals(d){
 function gsRangeDays(){ return GS_DATES.filter(d=>d>=gsRngStartPicker.value && d<=gsRngEndPicker.value); }
 // ---------- newocs 历史聚合（EXC_NEWOC / EXC_SHELF 双结构兼容：{dates:{date:{oc:...}}} 或旧版单日 {date,data}） ----------
 const CITY_OC_MAP = {'西安':'577','天津':'5','成都':'3','沈阳':'3413'};
-// 2026-11-13 用户口径：每人工作量表「稽核量」列数值 = 稽核量板块的「稽核登记量」（REG_DATA 当日 cnt 合计，含无异常登记）。
-//   各仓分摊对象（均两人）：天津 王远 / 王心月（看板名单为「王心月」）；成都 李敏 / 黄语文；沈阳 张希珍 / 杨曦。
-//   当日两人均出勤 → 整数平分（余数按日期播种随机给其中一人，保证两人合计 = 当日登记量，无小数）；
-//   当日仅一人出勤 → 全量给该出勤人（三仓均适用）；两人均不出勤 → 当日 0。
-//   西安暂不设分摊对象 → 稽核量列全部归 0。
+// 2026-11-13 用户口径：每人工作量表「稽核量」列，四仓两套来源。
+//   · 天津 / 成都 / 沈阳：数值 = 稽核量板块「稽核登记量」（REG_DATA 当日 cnt 合计，含无异常登记），
+//     分摊对象（均两人）：天津 王远 / 王心月（看板名单为「王心月」）；成都 李敏 / 黄语文；沈阳 张希珍 / 杨曦。
+//     两人均出勤 → 整数平分（余数按日期播种随机，合计守恒、无小数）；仅一人出勤 → 全量给该人；均不出勤 → 当日 0。
+//   · 西安：数值 = ③流转专项视频数量（VIDEO_DATA.part1.cells），按当日出勤整数分摊给 王妙星 / 张霞霞；
+//     2026-11-13 起不再并入「视频调取量」列（该列只含 ①主体+②群视频），理论耗时按稽核量占位标准 5 分/条计。
 //   整数原则与「异常处理量 / 异常邮件」旧分摊同源：base=Math.floor(总量/出勤人数)，余数按日期播种随机洗牌后前 rem 人各 +1。
 //   「稽核量板块」各表的稽核登记量仍直接取 REG_DATA，不受此分摊规则影响。
-const JZ_TARGETS = {'天津':['王远','王心月'],'成都':['李敏','黄语文'],'沈阳':['张希珍','杨曦']};   // 西安无分摊对象 → jzQ 恒为 0
+const JZ_TARGETS = {'天津':['王远','王心月'],'成都':['李敏','黄语文'],'沈阳':['张希珍','杨曦']};   // 仅登记量分摊对象；西安另按③流转专项计
 function _newocDatesOf(D){
   if(D && D.dates) return D.dates;
   if(D && D.date && D.data){ const o={}; o[D.date]=D.data; return o; }
@@ -647,14 +648,17 @@ function _aggOcDays(daysByDate, start, end){
   }
   return out;
 }
-// 稽核量按人（2026-11-13 口径）：数值 = 稽核量板块「稽核登记量」(REG_DATA 当日 cnt 合计，含无异常登记)
-// 按仓分摊到 JZ_TARGETS 该仓两人中当日出勤者：两人出勤整数平分（余数按日期播种随机）、仅一人出勤全量给该人、均不出勤当日 0。
-// 西安未配置分摊对象 → 稽核量列全部归 0。整数原则与异常邮件 / 异常处理量旧分摊同源（无小数，合计守恒）。
+// 稽核量按人（2026-11-13 口径，四仓分两套来源）：
+//   · 天津 / 成都 / 沈阳：数值 = 稽核量板块「稽核登记量」(REG_DATA 当日 cnt 合计，含无异常登记)，
+//     按 JZ_TARGETS 该仓两人当日出勤整数平分（余数按日期播种随机）、仅一人出勤全量给该人、均不出勤当日 0。
+//   · 西安：数值 = ③西安流转专项视频(part1.cells)，按当日出勤整数分摊给 王妙星 / 张霞霞（lzvSplit）。
+//     2026-11-13 用户口径「流转专项视频 = 稽核量」：③不再并入视频调取量列，理论耗时按稽核量占位标准 5 分/条计。
+//   整数原则与异常邮件 / 异常处理量旧分摊同源（无小数，合计守恒）。
 function jzPerCalc(start, end){
   const out={}; Object.keys(JZ_TARGETS).forEach(c=>JZ_TARGETS[c].forEach(p=>out[p]=0));
   rngDaysSrc(start,end).forEach(d=>{
     for(const city in REG_DATA){
-      const tg=JZ_TARGETS[city]; if(!tg || !tg.length) continue;   // 西安：无分摊对象 → 稽核量列归 0
+      const tg=JZ_TARGETS[city]; if(!tg || !tg.length) continue;   // 西安不走登记量分摊，单独在下方按③流转专项计
       const lst=(REG_DATA[city]||{})[d]; if(!lst || !lst.length) continue;
       let dayTot=0; lst.forEach(r=>{ dayTot+=(r.cnt||0); });   // 与稽核量板块「稽核登记量」同口径（regRows 的 cnt 累加）
       if(dayTot<=0) continue;
@@ -669,6 +673,12 @@ function jzPerCalc(start, end){
       order.forEach((p,idx)=>{ out[p]+= base + (idx<rem?1:0); });
     }
   });
+  // 西安：③流转专项视频按区间内各视频日累加（已从「视频调取量」列移出，避免重复计数）
+  rngDaysSrc(start,end).forEach(d=>{
+    if(!VIDEO_DATA[d]) return;
+    const lz=lzvSplit(d);
+    FIVE.forEach(p=>{ if(lz[p]) out[p]=(out[p]||0)+lz[p]; });
+  });
   return out;
 }
 function rngDaysSrc(start,end){ return GS_DATES.filter(d=>d>=start && d<=end); }
@@ -682,7 +692,7 @@ function renderGongshi(){
   //    隐藏「各理论耗时量对比」（取退货 / SW 均无源数据，对比无意义）
   const _hasXA = gsCitySet().indexOf('西安')>=0;
   const _sec=(id,show)=>{ const e=document.getElementById(id); if(e) e.style.display = show?'':'none'; };
-  const isXianTab = (!gsIsOverview && gsWhFilter==='西安');   // 西安单仓 tab：视频调取量即稽核量，二者合并展示
+  // 2026-11-13 起取消「西安 tab 视频调取量即稽核量」的合并展示：视频调取=①主体+②群视频、稽核量=③流转专项，两行各自独立、均计入合计
   _sec('secCore', !gsIsOverview);
   _sec('secGongshi', false);   // 2026-11-10：工艺工时已移到独立「工艺工时参考」tab，仓数据分析 / 单仓 tab 均不显示
   // 2026-11-09 用户指示：总览(仓数据分析)删掉「各理论耗时量对比」(仅西安口径)，四仓共同数据对比统一由「四仓对比」板块承载；单仓 tab 保留
@@ -690,10 +700,7 @@ function renderGongshi(){
   ['gsRowTq','gsRowSw','gsRowVid','gsRowMail','gsRowUpph'].forEach(id=>_sec(id,_hasXA));
   // 异常处理量（newocs 口径A）/ 上下架量 / 稽核量：四仓均有源数据，各仓核心指标统一展示
   ['gsRowMsg','gsRowTot','gsRowExc','gsRowShelf','gsRowJz'].forEach(id=>_sec(id,true));
-  _sec('gsRowJz', !isXianTab);   // 西安 tab：视频调取量即稽核量，移除冗余「稽核量」行（避免与「视频调取量（稽核量）」重复计数）
-  // 「视频调取量」行标签：西安 tab 改为「视频调取量（稽核量）」，其余保持原样
-  const vidLabelEl = document.querySelector('#gsRowVid .nm');
-  if(vidLabelEl){ vidLabelEl.innerHTML = isXianTab ? '视频调取量<span class="thu">（稽核量）</span>' : '视频调取<span class="thu">（含群视频·流转专项）</span>'; }
+  // 「稽核量」行四仓统一展示（上方 gsRowJz 已 _sec(...,true)）；西安数值 = ③流转专项视频，与视频调取行不重复计数
   _sec('secException', true);  // newocs 异常处理量：全四仓均展示（单仓显示该仓；总览四仓分别堆叠，与「流转失误」模块一致）
   _sec('secShelf', true);      // newocs 异常上下架处理量：全四仓均展示（同上）
   const rngDays=gsRangeDays();
@@ -706,13 +713,14 @@ function renderGongshi(){
     if(g){ tq+=g.tuihuo_qty||0; mq+=g.msg_reply_qty||0; th+=g.tuihuo_hours||0; mh+=g.msg_reply_hours||0; }
     if(s){ sq+=s.qty||0; sh+=s.hours||0; }
   });
-  // 视频调取总数量：区间内各视频日「每人当日合计」(part2per + 群视频part3 + 西安流转专项视频按出勤整数分摊至王妙星/张霞霞) 按 FIVE 求和
-  // —— 与每人表「视频调取量」口径完全一致（均为 part2per+群视频+流转专项，区间各视频日按人累计）
+  // 视频调取总数量：区间内各视频日「每人当日合计」(①视频调取主体 part2per + ②群视频 part3) 按 FIVE 求和
+  // —— 2026-11-13 起③西安流转专项视频不再并入（改归「稽核量」列），与每人表「视频调取量」口径完全一致
   Object.keys(VIDEO_DATA).filter(d=>d>=start&&d<=end).forEach(d=>{
     const m = vidDayMapBuild(d);
     FIVE.forEach(p=>{ vq += m[p]; });
   });
-  // 视频三部分区间各自合计（用于核心指标行下钻 & 「视频调取构成」板块；与 vidDayMapBuild 同源，仅拆开口径）
+  // 视频三部分区间各自合计（口径追溯用；「视频调取构成」板块已移除，仅保留变量）
+  // 2026-11-13：仅 ①主体(vqP2) + ②群视频(vqP3) 构成视频调取量 vq；③流转专项(vqP1) 改由 jzPerCalc 计入「稽核量」
   let vqP2=0, vqP3=0, vqP1=0;
   Object.keys(VIDEO_DATA).filter(d=>d>=start&&d<=end).forEach(d=>{
     const rec=VIDEO_DATA[d];
@@ -722,7 +730,7 @@ function renderGongshi(){
     vqP3 += Number(p3['杨凡凡']||0)+Number(p3['马红霞']||0)+Number(p3['赵豫思']||0);
     vqP1 += (rec.part1&&rec.part1.cells!=null)?Number(rec.part1.cells):0;
   });
-  // 流转专项视频已并入「视频调取」（按出勤分摊到王妙星/张霞霞），避免与每人表口径冲突、不再单列
+  // ③流转专项视频已改归「稽核量」（按出勤分摊到王妙星/张霞霞），不再并入视频调取、也不再单列
   // 异常邮件跟进（区间累计：运营中心=西安条数）；理论耗时 = 数量 × 标准工时 1 分/条（工艺工时摸底「异常邮件处理」）
   let mailq=0;
   Object.keys((MAIL_ANOMALY&&MAIL_ANOMALY.byDay)||{}).filter(d=>d>=start&&d<=end).forEach(d=>{ mailq += MAIL_ANOMALY.byDay[d]||0; });
@@ -776,13 +784,13 @@ function renderGongshi(){
   setTxt('gsShelfHours', (hasRng&&shelfQ0>0)?fmt(+(shelfQ0*SHELF_RATE).toFixed(1))+' 分':'—');
   setTxt('gsJzQty',   (hasRng&&jzQ0>0)?fmt(jzQ0)+' 条':'—');
   setTxt('gsJzHours', (hasRng&&jzQ0>0)?fmt(+(jzQ0*JZ_RATE).toFixed(1))+' 分':'—');
-  const vh = vq*6.05;  // 视频调取理论耗时 =（含群视频+流转专项）数量 × 工艺工时(6.05, 取每日明细Q列平均)
-  setTxt('gsTotQty', hasRng?fmt(tq+mq+sq+vq+mailq+excQ0+shelfQ0+(isXianTab?0:jzQ0)):'—');
+  const vh = vq*6.05;  // 视频调取理论耗时 =（①主体 + ②群视频）数量 × 工艺工时(6.05, 取每日明细Q列平均)；③流转专项改按稽核量 5 分/条计
+  setTxt('gsTotQty', hasRng?fmt(tq+mq+sq+vq+mailq+excQ0+shelfQ0+jzQ0):'—');
   setTxt('gsTqHours', hasRng?fmt(th)+' 分':'—');
   setTxt('gsMsgHours', hasRng?fmt(mh)+' 分':'—');
   setTxt('gsSwHours', hasRng?fmt(sh)+' 分':'—');
   setTxt('gsVidHours', hasRng?fmt(vh)+' 分':'—');
-  setTxt('gsTotHours', hasRng?fmt(+((th+mh+sh+mailq+vh+excQ0*EXC_RATE+shelfQ0*SHELF_RATE+(isXianTab?0:jzQ0*JZ_RATE)).toFixed(1)))+' 分':'—');
+  setTxt('gsTotHours', hasRng?fmt(+((th+mh+sh+mailq+vh+excQ0*EXC_RATE+shelfQ0*SHELF_RATE+jzQ0*JZ_RATE).toFixed(1)))+' 分':'—');
 
   // ② 工艺工时对照表
   renderGongshiTable();
@@ -792,7 +800,7 @@ function renderGongshi(){
   setTxt('gsPerRangeLbl', (start&&end)?(start+' ~ '+end):'—');   // 每人工作量板块同步显示当前区间，明确联动
 
   // ③ 每人工作量 —— 拆成「处理量」表（含 UPPH）+「处理的理论耗时」表（UPPH 跟随处理量表）
-  // 视频调取「每人区间累计」（Part2+Part3+西安流转专项视频按出勤整数分摊），区间各视频日求和 → 与核心指标「视频调取」口径完全一致、随区间筛选联动
+  // 视频调取「每人区间累计」（①Part2 主体 + ②Part3 群视频；③流转专项已移出至稽核量），区间各视频日求和 → 与核心指标「视频调取」口径完全一致、随区间筛选联动
   const vidPer = {}; Array.from(new Set([...FIVE, ...SHENYANG, ...CHENGDU, ...TIANJIN, ...(S.employees||[])])).forEach(p=>vidPer[p]=0);
   Object.keys(VIDEO_DATA).filter(d=>d>=start&&d<=end).forEach(d=>{
     const m=vidDayMapBuild(d); FIVE.forEach(p=>{ vidPer[p]+=(m[p]||0); });
@@ -865,22 +873,22 @@ function renderGongshi(){
     {k:'b',     h:'消息回复合计<span class="thu">(次)</span>',          f:r=>fmt(r.b),         n:'消息回复'},
     {k:'c',     h:'SW稽核合计<span class="thu">(次)</span>',            f:r=>fmt(r.c),         n:'SW稽核'},
     {k:'mailQ', h:'异常邮件跟进<span class="thu">(条)</span>',          f:r=>fmt(r.mailQ),     n:'异常邮件跟进'},
-    {k:'vid',   h:'视频调取量<span class="thu">(区间累计·个)</span>',    f:r=>fmt(r.vid),       n:'视频调取量'},
+    {k:'vid',   h:'视频调取量<span class="thu">(①主体+②群视频)</span>',    f:r=>fmt(r.vid),       n:'视频调取量（①主体+②群视频；③流转专项已移出至稽核量）'},
     {k:'excQ',  h:'异常处理量<span class="thu">(单·newocs口径A)</span>', f:r=>fmt(r.excQ), n:'异常处理量'},
     {k:'shelfQ',h:'上下架处理量<span class="thu">(条)</span>',          f:r=>fmt(r.shelfQ),    n:'上下架处理量'},
     {k:'gdQ',   h:'工单处理量<span class="thu">(单·待接数据)</span>',   f:r=>fmt(r.gdQ),       n:'工单处理量', force:true},
-    {k:'jzQ',   h:'稽核量<span class="thu">(条·登记量·出勤整数平分)</span>',  f:r=>fmt(r.jzQ),       n:'稽核量（稽核登记量：天津 王远/王心月、成都 李敏/黄语文、沈阳 张希珍/杨曦 按当日出勤整数平分；一人出勤全量给该人；西安暂归 0）', force:true}
+    {k:'jzQ',   h:'稽核量<span class="thu">(条·登记量/流转专项)</span>',  f:r=>fmt(r.jzQ),       n:'稽核量（天津/成都/沈阳=稽核登记量按两人出勤整数平分；西安=③流转专项视频按出勤分摊给王妙星/张霞霞；5 分/条占位标准）', force:true}
   ];
   const COLS_B=[
     {k:'tuihuoTheo', h:'取退货理论耗时<span class="thu">(分)</span>',   f:r=>r.tuihuoTheo.toFixed(1), n:'取退货 4.5 分/件'},
     {k:'msgTheo',    h:'消息回复理论时长<span class="thu">(分)</span>', f:r=>r.msgTheo.toFixed(1),    n:'消息回复（按本仓标准工时）'},
     {k:'swH2',       h:'SW稽核理论耗时<span class="thu">(分)</span>',   f:r=>fmt(r.swH2),             n:'SW稽核（见「工艺工时」对照表）'},
     {k:'mailH',      h:'异常邮件理论耗时<span class="thu">(分)</span>', f:r=>r.mailH.toFixed(1),      n:'异常邮件跟进 1 分/条'},
-    {k:'vidTheo',    h:'视频调取理论耗时<span class="thu">(分)</span>', f:r=>r.vidTheo.toFixed(1),    n:'视频调取 6.05 分/个'},
+    {k:'vidTheo',    h:'视频调取理论耗时<span class="thu">(分)</span>', f:r=>r.vidTheo.toFixed(1),    n:'视频调取 6.05 分/个（①主体+②群视频）'},
     {k:'excH',       h:'异常处理理论耗时<span class="thu">(分)</span>', f:r=>r.excH.toFixed(1),          n:'异常处理 2 分/单（9月四仓实测中位数）'},
     {k:'shelfTheo',  h:'上下架理论耗时<span class="thu">(分)</span>',   f:r=>r.shelfTheo.toFixed(1),  n:'上下架 0.5 分/条'},
     {k:'gdTheo',     h:'工单理论耗时<span class="thu">(分)</span>',     f:r=>'\u2014',                n:'工单处理量（数据源待定）', force:true},
-    {k:'jzTheo',     h:'稽核量理论耗时<span class="thu">(分)</span>',   f:r=>r.jzTheo.toFixed(1),     n:'稽核量（稽核登记量）5 分/条（占位标准）', force:true}
+    {k:'jzTheo',     h:'稽核量理论耗时<span class="thu">(分)</span>',   f:r=>r.jzTheo.toFixed(1),     n:'稽核量 5 分/条（占位标准，暂时统一）', force:true}
   ];
   const ca=COLS_A.filter(c=> c.force || !_zeroCol(c.k)), cb=COLS_B.filter(c=> c.force || !_zeroCol(c.k));
   const hidA=COLS_A.filter(c=> !c.force && _zeroCol(c.k)).map(c=>c.n), hidB=COLS_B.filter(c=> !c.force && _zeroCol(c.k)).map(c=>c.n);
@@ -896,7 +904,7 @@ function renderGongshi(){
       +'<td>'+fmt(r.perTot)+'</td><td>'+r.attHrs.toFixed(1)+'</td><td class="c-blue"><b>'+r.upph.toFixed(2)+'</b></td></tr>';
   });
   htmlA+='</table>';
-  htmlA+='<div class="hint" style="margin-top:6px">个人总处理量 = 取退货合计 + 消息回复合计 + SW稽核合计 + 视频调取量 + 异常邮件跟进 + 异常处理量 + 上下架处理量 + 稽核量 + 工单处理量；视频调取量为区间内各视频日（Part2 标准作业审核表 + 群视频 Part3 + 西安流转专项视频按目标2人「王妙星、张霞霞」当日出勤整数分摊）按人累计，与核心指标「视频调取」口径完全一致、随区间筛选联动；<b>异常处理量自 2026-11-06 起四仓统一为 newocs 口径A实际值</b>（每人每天最后一步处理人归属、该步时间=当天，区间累计；此前西安为外呼登记按出勤分摊、其余三仓为 0，历史数值不再回改）；上下架处理量 = newocs 异常库「上下架记录查询」按操作人归属（区间累计）；<b>稽核量自 2026-11-13 起</b>：数值取「稽核量板块」的稽核登记量（当日登记 cnt 合计，含无异常），天津 王远 / 王心月、成都 李敏 / 黄语文、沈阳 张希珍 / 杨曦 各按当日出勤在两人间整数平分（余数按日期播种随机，无小数、两人合计=当日登记量），仅一人出勤则全量给该出勤人（三仓均适用），两人均不出勤当日 0；西安 的稽核量列暂时全部归 0；工单处理量数据源待接，暂为空列占位。UPPH = 个人总处理量 ÷ 区间「实际出勤工时」；实际出勤工时 = 区间内每个出勤日的打卡出勤时长之和（取飞书「考勤明细」AY 列，2026-09-01 起为真实打卡值；该日无打卡记录时按 8 小时/天回退，保证与历史口径连续；<b>自 2026-10-20 起缺考勤明细的日期，全部按默认出勤 8H 计入分母</b>）。'+hidNote('分项量',hidA)+'</div>';
+  htmlA+='<div class="hint" style="margin-top:6px">个人总处理量 = 取退货合计 + 消息回复合计 + SW稽核合计 + 视频调取量 + 异常邮件跟进 + 异常处理量 + 上下架处理量 + 稽核量 + 工单处理量；视频调取量为区间内各视频日（①Part2 标准作业审核表 + ②群视频 Part3）按人累计，2026-11-13 起③西安流转专项视频不再并入本列、已改归「稽核量」列，与核心指标「视频调取」口径完全一致、随区间筛选联动；<b>异常处理量自 2026-11-06 起四仓统一为 newocs 口径A实际值</b>（每人每天最后一步处理人归属、该步时间=当天，区间累计；此前西安为外呼登记按出勤分摊、其余三仓为 0，历史数值不再回改）；上下架处理量 = newocs 异常库「上下架记录查询」按操作人归属（区间累计）；<b>稽核量自 2026-11-13 起</b>：天津 王远 / 王心月、成都 李敏 / 黄语文、沈阳 张希珍 / 杨曦 取「稽核量板块」的稽核登记量（当日登记 cnt 合计，含无异常）各按当日出勤在两人间整数平分（余数按日期播种随机，无小数、两人合计=当日登记量），仅一人出勤则全量给该出勤人，两人均不出勤当日 0；西安 = ③流转专项视频数量按当日出勤整数分摊给 王妙星 / 张霞霞（不再计入视频调取量），四仓理论耗时统一按稽核量占位标准 5 分/条计；工单处理量数据源待接，暂为空列占位。UPPH = 个人总处理量 ÷ 区间「实际出勤工时」；实际出勤工时 = 区间内每个出勤日的打卡出勤时长之和（取飞书「考勤明细」AY 列，2026-09-01 起为真实打卡值；该日无打卡记录时按 8 小时/天回退，保证与历史口径连续；<b>自 2026-10-20 起缺考勤明细的日期，全部按默认出勤 8H 计入分母</b>）。'+hidNote('分项量',hidA)+'</div>';
   // 表B：处理的理论耗时（区间累计）
   let htmlB='<div class="lbl" style="margin:12px 0 4px">处理的理论耗时</div><table><tr><th class="nm">姓名</th><th>仓</th>'
     + cb.map(c=>'<th>'+c.h+'</th>').join('')
@@ -1040,15 +1048,14 @@ const ATT_WK = ['日','一','二','三','四','五','六'];
 // 来源：飞书「工艺工时摸底」子表 + 2026-09 四仓实测 + 用户确认值；统一公式 理论耗时 = 处理量 × 标准工时
 const GS_GONGSHI = [
   {name:'取退货', city:'西安', rate:'4.5', logic:'7-9 月前台退取货→末次回复均值（剔除 1 条 14.3h 跨天异常，n=324）；核心指标 / 每人表：取退货理论耗时 = 取退货量 × 4.5', date:'2026-09-15'},
-  {name:'视频调取', city:'西安', rate:'6.05', logic:'每日明细(西安) Q列(视频调取耗时) ÷ P列(视频调取量) 逐行商之均值；视频调取量 = ①视频调取主体 + ②群视频 + ③西安流转专项 三部分按人累计；理论耗时 = 视频调取量 × 6.05', date:'2026-09-18'},
-  {name:'流转专项视频', city:'西安', rate:'6.05', logic:'与视频调取同口径（取每日明细 Q 列平均）；已并入「视频调取量」第三部分，不单独重复计费', date:'2026-09-18'},
+  {name:'视频调取', city:'西安', rate:'6.05', logic:'每日明细(西安) Q列(视频调取耗时) ÷ P列(视频调取量) 逐行商之均值；2026-11-13 起视频调取量 = ①视频调取主体 + ②群视频 两部分按人累计（③西安流转专项不再并入，已归「稽核量」）；理论耗时 = 视频调取量 × 6.05；标准工时暂保持 6.05 不变', date:'2026-11-13'},
   {name:'SW稽核', city:'西安', rate:'按图', logic:'SW 按每日实际审核图片（SW检查表附件）D 板块 SW.T +5%(变差) +3min 计（180s/图）；每图环节 / 产品不同、不取均值；5S / 安全另按 600s/次。看板直接取每日明细实际耗时 swH2，不乘固定费率', date:'2026-09-18'},
   {name:'异常邮件跟进', city:'西安', rate:'1', logic:'工艺工时摸底「异常邮件处理」1 分/条；按当日出勤在 张霞霞 / 马红霞 / 杨凡凡 间整数平分（2026-10-25 起口径）；理论耗时 = 异常邮件条数 × 1', date:'2026-09-08'},
   {name:'工单处理', city:'西安', rate:'43.1', logic:'根据 1-9 月西安仓处理时效与工单总数计算（去掉异常数据）；看板「每人工作量」已预留工单列（gdQ），数据源待接入，暂以 0 计入、不参与理论耗时', date:'2026-09-08'},
   {name:'消息回复（客诉对接）', city:'四仓', rate:'16.19', logic:'7-9 月四仓群消息「被@→回复」平均响应时长（按实际回复人统计，非被@人）：西安 / 成都 / 天津 15.72、沈阳 17.6；2026-11-10 四仓合并为统一标准工时 = (15.72 + 17.6 + 15.72 + 15.72) ÷ 4 = <b>16.19 分/次</b>（原 4 条各仓费率明细行已删除）；看板理论耗时 = Σ(每人回复次数 × 所属仓实测费率)', date:'2026-11-10'},
   {name:'异常处理', city:'四仓', rate:'2', logic:'2026-09 四仓 12,441 条处理时间差（异常上架−异常接收、完成异常−异常下架）中位数 2.0 分；均值 8.6 分受长尾影响，2026-11-10 用户拍板改用中位数；处理量 = newocs 口径A（最后一步处理人归属、该步时间=当天）；理论耗时 = 异常处理量 × 2', date:'2026-11-10'},
   {name:'上下架', city:'四仓', rate:'0.5', logic:'处理量 = newocs 异常库上下架记录按操作人归属；理论耗时 = 上下架量 × 0.5', date:'2026-11-10'},
-  {name:'稽核量', city:'四仓', rate:'5', logic:'占位标准 5 分/条（准确值待工艺确认）；稽核量 = 稽核量板块的稽核登记量（当日登记 cnt 合计），2026-11-13 起按仓两人按当日出勤整数平分（整数原则：floor 平分 + 余数按日期播种随机，仅一人出勤则全量给该出勤人）：天津 王远 / 王心月、成都 李敏 / 黄语文、沈阳 张希珍 / 杨曦；西安 暂时归 0；理论耗时 = 稽核量 × 5', date:'2026-11-06'},
+  {name:'稽核量', city:'四仓', rate:'5', logic:'占位标准 5 分/条（准确值待工艺确认，暂时统一按此计算）；天津 / 成都 / 沈阳 = 稽核量板块的稽核登记量（当日登记 cnt 合计），按仓两人当日出勤整数平分（整数原则：floor 平分 + 余数按日期播种随机，仅一人出勤则全量给该出勤人）：天津 王远 / 王心月、成都 李敏 / 黄语文、沈阳 张希珍 / 杨曦；西安 = ③流转专项视频数量（2026-11-13 起不再并入视频调取量列，按当日出勤整数分摊给 王妙星 / 张霞霞）；理论耗时 = 稽核量 × 5', date:'2026-11-13'},
   {name:'外呼', city:'—', rate:'—', logic:'—', date:'2026-11-06'},
 ];
 function renderGongshiTable(){
@@ -1478,8 +1485,9 @@ function intSplit(total, attended, seed){
   for(let i=0;i<rem;i++){ out[idx[i]] += 1; }
   return out;
 }
-// 西安流转专项视频数量（Part1.cells）按当日出勤整数分摊至 王妙星 / 张霞霞：
+// ③西安流转专项视频数量（Part1.cells）按当日出勤整数分摊至 王妙星 / 张霞霞：
 // 两人均出勤 → 平分（余数随机给其中一人）；仅一人出勤 → 该人全额；均不出勤 → 0
+// 2026-11-13 起不再并入「视频调取量」列，改归「稽核量」列（由 jzPerCalc 调用，按 5 分/条占位标准计耗时）
 function lzvSplit(day){
   const rec=VIDEO_DATA[day];
   const cells=(rec&&rec.part1&&rec.part1.cells!=null)?Number(rec.part1.cells):0;
@@ -1487,7 +1495,9 @@ function lzvSplit(day){
   const attended=[];
   if(att['王妙星']==='出勤') attended.push('王妙星');
   if(att['张霞霞']==='出勤') attended.push('张霞霞');
-  return intSplit(cells, attended);
+  // 2026-11-13：与异常邮件 / 稽核登记量分摊统一为「按日期播种随机」，保证整数守恒且刷新不抖动
+  let seed=0; for(let i=0;i<day.length;i++){ seed=(seed*131+(day.charCodeAt(i)||0))>>>0; }
+  return intSplit(cells, attended, mulberry32(seed));
 }
 // 异常邮件跟进（byDay[day]）按当日出勤在目标人中整数平分（未出勤者不参与、也不摊给缺席者），保证无小数
 // 目标人切换（2026-10-26 用户指示）：自 2026-10-25 起改为 张霞霞/马红霞/杨凡凡 三人均分；此前保持 赵豫思/杨凡凡/马红霞，历史数据不变；
@@ -1499,19 +1509,19 @@ function mailSplit(day){
   let seed=0; for(let i=0;i<day.length;i++){ seed=(seed*131+(day.charCodeAt(i)||0))>>>0; }
   return intSplit(q, attended, mulberry32(seed));
 }
-// 视频调取「每人当日合计」= part2per + part3 + 西安流转专项视频数量(按出勤整数分摊 lzvSplit)
+// 视频调取「每人当日合计」= ①视频调取主体(part2per) + ②群视频(part3)  —— 2026-11-13 用户口径：视频调取量列以后只含第一、第二部分
+// ③西安流转专项视频(part1.cells) 不再并入本列，改归「稽核量」列（见 jzPerCalc / lzvSplit），按稽核量占位标准 5 分/条计耗时
 // part2per 可能为小数（如两人平分得 17.5），导致每人视频量非整数；按「随机给当日出勤中的一人多加 1 凑成整数」消除小数
 function vidDayMapBuild(day){
   const out={}; FIVE.forEach(p=>out[p]=0);
   if(!day || !VIDEO_DATA[day]) return out;
   const rec=VIDEO_DATA[day];
-  const lzv=lzvSplit(day);
   const att=(ATT.attendance&&ATT.attendance[day])||{};
   const raw={};
   FIVE.forEach(p=>{
     const p2=((rec.part2per&&rec.part2per[p]!=null)?Number(rec.part2per[p]):0);
     const p3=((rec.part3&&rec.part3[p]!=null)?Number(rec.part3[p]):0);
-    raw[p]=p2+p3+(lzv[p]||0);
+    raw[p]=p2+p3;
   });
   let rem=0;
   FIVE.forEach(p=>{ const f=Math.floor(raw[p]+1e-9); out[p]=f; rem += (raw[p]-f); });
@@ -1527,6 +1537,7 @@ function vidDayMapBuild(day){
   return out;
 }
 // 视频调取构成（三部分）板块：区间各视频日按口径拆成 主体(Part2) / 群视频(Part3) / 西安流转专项(Part1) 各自合计
+// 【已停用】2026-11-13 用户口径：视频调取量只含 ①主体+②群视频，③流转专项(Part1) 改归「稽核量」列；本函数保留但无调用
 function renderVideoParts(start, end){
   const wrap=document.getElementById('vpTableWrap');
   const lbl=document.getElementById('vpRangeLbl');
